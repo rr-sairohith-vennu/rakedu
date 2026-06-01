@@ -28,7 +28,7 @@
         "spec": {
           "api": "absent",
           "messaging": "absent",
-          "storage": "absent"
+          "storage": "present"
         }
       },
       "postApprovalModifications": [],
