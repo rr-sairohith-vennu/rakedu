@@ -1,0 +1,80 @@
+{
+  "childIds": [],
+  "coordinationRef": null,
+  "createdAt": "2026-06-01T23:23:40Z",
+  "currentPhase": "discovery",
+  "deployables": [],
+  "graduation": {
+    "graduated": false,
+    "graduatedAt": null,
+    "graduatedTo": []
+  },
+  "id": "student-verification-exclusive-student-deals",
+  "jiraKey": "PPE-1730",
+  "jiraUrl": "https://rakutenrewards.atlassian.net/browse/PPE-1730",
+  "openDecisions": [],
+  "parentId": null,
+  "phases": {
+    "discovery": {
+      "approvedAt": null,
+      "approvedBy": null,
+      "artifacts": {
+        "adrsCreated": [],
+        "requirements": {
+          "business": "absent",
+          "technical": "absent"
+        },
+        "spec": {
+          "api": "absent",
+          "messaging": "absent",
+          "storage": "absent"
+        }
+      },
+      "postApprovalModifications": [],
+      "status": "not_started"
+    },
+    "implementation": {
+      "checkpoint": {
+        "activeSkill": null,
+        "lastCompletedStep": null,
+        "updatedAt": null
+      },
+      "completedTasks": [],
+      "postApprovalModifications": [],
+      "remainingTasks": [],
+      "status": "not_started"
+    },
+    "planning": {
+      "artifacts": [],
+      "postApprovalModifications": [],
+      "status": "not_started"
+    },
+    "qa": {
+      "postApprovalModifications": [],
+      "status": "not_started"
+    },
+    "review": {
+      "postApprovalModifications": [],
+      "status": "not_started"
+    },
+    "validation": {
+      "artifacts": [],
+      "status": "not_started"
+    },
+    "verification": {
+      "artifacts": {
+        "report": "absent"
+      },
+      "postApprovalModifications": [],
+      "status": "not_started"
+    }
+  },
+  "productionBound": true,
+  "risk": "R2",
+  "spawnedWorkItems": [],
+  "subtype": null,
+  "tier": "full",
+  "timebox": null,
+  "title": "Student Verification - Exclusive Student Deals",
+  "type": "story"
+}

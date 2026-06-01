@@ -8,3 +8,4 @@ leading `→`.
 
 | ID | Title | Type | Tier | Risk | Parent | Phase | Status |
 |----|-------|------|------|------|--------|-------|--------|
+| student-verification-exclusive-student-deals | Student Verification - Exclusive Student Deals | story | full | R2 |  | discovery | not_started |
