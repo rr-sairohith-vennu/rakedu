@@ -21,8 +21,9 @@
       "artifacts": {
         "adrsCreated": [],
         "requirements": {
-          "business": "absent",
-          "technical": "absent"
+          "business": "present",
+          "technical": "present",
+          "userStories": "present"
         },
         "spec": {
           "api": "absent",
@@ -71,6 +72,7 @@
   },
   "productionBound": true,
   "risk": "R2",
+  "riskRationale": "New user-facing capability with external email integration and significant new schema — no R1 indicators (auth model unchanged, PII scoped to a single .edu field on a prototype).",
   "spawnedWorkItems": [],
   "subtype": null,
   "tier": "full",
