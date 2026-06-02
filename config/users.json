@@ -1,0 +1,26 @@
+{
+  "user_types": {
+    "anonymous": {
+      "description": "No login required.",
+      "requires_login": false,
+      "regions": ["local"],
+      "credentials": {}
+    },
+    "verified": {
+      "description": "Logged-in member with verified student status.",
+      "requires_login": true,
+      "regions": ["local"],
+      "credentials": {
+        "local": { "username": "LOCAL_VERIFIED_EMAIL", "password": "LOCAL_VERIFIED_PASSWORD" }
+      }
+    },
+    "unverified": {
+      "description": "Logged-in member without student verification.",
+      "requires_login": true,
+      "regions": ["local"],
+      "credentials": {
+        "local": { "username": "LOCAL_UNVERIFIED_EMAIL", "password": "LOCAL_UNVERIFIED_PASSWORD" }
+      }
+    }
+  }
+}
