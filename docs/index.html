@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forge Testing Skills — Try It Yourself</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #1a1a1a; color: #e0e0e0; height: 100vh; overflow: hidden; }
+  #progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: #4a7a8a; transition: width 0.3s ease; z-index: 100; }
+  .slides { width: 100%; height: 100vh; position: relative; }
+  .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 56px 80px; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; }
+  .slide.active { opacity: 1; pointer-events: all; }
+  #counter { position: fixed; top: 20px; right: 24px; font-size: 12px; color: #555; z-index: 100; }
+  .card { background: #232323; border: 1px solid #2e2e2e; border-radius: 14px; padding: 40px 48px; max-width: 840px; width: 100%; max-height: 86vh; overflow-y: auto; }
+  .card::-webkit-scrollbar { width: 3px; } .card::-webkit-scrollbar-thumb { background: #383838; border-radius: 2px; }
+
+  /* Step badge */
+  .badge { display: inline-flex; align-items: center; gap: 7px; border-radius: 20px; padding: 4px 13px; font-size: 10.5px; letter-spacing: 0.09em; text-transform: uppercase; margin-bottom: 18px; border: 1px solid transparent; }
+  .badge.intro { background: #1e2530; border-color: #2a3a50; color: #6090b0; }
+  .badge.prereq { background: #261e14; border-color: #3a2a14; color: #a07840; }
+  .badge.step { background: #1a2020; border-color: #283030; color: #508090; }
+  .badge.action { background: #1a2218; border-color: #283228; color: #60a070; }
+  .badge.warn { background: #201a1a; border-color: #302020; color: #906050; }
+  .badge .num { background: rgba(255,255,255,0.06); border-radius: 10px; padding: 1px 7px; font-size: 10px; }
+
+  h1 { font-size: 26px; font-weight: 600; color: #f0f0f0; margin-bottom: 8px; line-height: 1.3; }
+  .sub { font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.65; }
+
+  /* Command block */
+  .cmd { background: #181818; border: 1px solid #2a2a2a; border-radius: 9px; overflow: hidden; margin: 11px 0; }
+  .cmd-top { display: flex; align-items: center; justify-content: space-between; padding: 7px 14px; background: #1e1e1e; border-bottom: 1px solid #272727; }
+  .cmd-lbl { font-size: 10px; color: #505050; letter-spacing: 0.1em; text-transform: uppercase; }
+  .copy { background: none; border: 1px solid #323232; border-radius: 5px; color: #585858; font-size: 11px; padding: 3px 10px; cursor: pointer; transition: all 0.15s; }
+  .copy:hover { background: #282828; color: #999; border-color: #484848; }
+  .copy.ok { color: #60a070; border-color: #406050; }
+  .cmd-body { padding: 13px 15px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12.5px; color: #bcc8d4; line-height: 1.65; white-space: pre; overflow-x: auto; }
+
+  /* Answer block */
+  .ans { background: #1b211b; border: 1px solid #283228; border-radius: 9px; padding: 12px 15px; margin: 10px 0; }
+  .ans-lbl { font-size: 10px; color: #3d6a45; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 9px; }
+  .ans-row { display: flex; gap: 9px; margin-bottom: 5px; font-size: 12.5px; color: #8aaa90; align-items: flex-start; }
+  .ans-row:last-child { margin-bottom: 0; }
+  .arr { color: #3d6a45; flex-shrink: 0; margin-top: 2px; font-size: 10px; }
+
+  /* Info / warn / success boxes */
+  .box { border-radius: 8px; padding: 11px 14px; margin: 11px 0; font-size: 12.5px; line-height: 1.65; }
+  .box.info { background: #181d22; border: 1px solid #1e2e3a; border-left: 3px solid #3a6080; color: #6a90aa; }
+  .box.warn { background: #1e1810; border: 1px solid #32220e; border-left: 3px solid #805030; color: #a07050; }
+  .box.good { background: #171d15; border: 1px solid #203018; border-left: 3px solid #407050; color: #60946e; }
+  .box.tip  { background: #1a1820; border: 1px solid #282030; border-left: 3px solid #604898; color: #8870b8; }
+
+  /* List */
+  ul.l { list-style: none; margin: 6px 0; }
+  ul.l li { display: flex; gap: 9px; padding: 4px 0; font-size: 12.5px; color: #909090; line-height: 1.5; }
+  ul.l li::before { content: "—"; color: #383838; flex-shrink: 0; }
+
+  /* Two col */
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .col { background: #1d1d1d; border: 1px solid #2a2a2a; border-radius: 8px; padding: 14px; }
+  .col-t { font-size: 10px; color: #484848; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 7px; }
+  .col-b { font-size: 12.5px; color: #7a7a7a; line-height: 1.6; }
+
+  /* Nav */
+  nav { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; align-items: center; z-index: 100; }
+  .nb { background: #242424; border: 1px solid #333; border-radius: 8px; color: #7a7a7a; font-size: 13px; padding: 7px 18px; cursor: pointer; transition: all 0.15s; }
+  .nb:hover { background: #2c2c2c; color: #bbb; border-color: #484848; }
+  .nb:disabled { opacity: 0.25; cursor: not-allowed; }
+  .dots { display: flex; gap: 5px; align-items: center; padding: 0 6px; }
+  .dot { width: 5px; height: 5px; border-radius: 50%; background: #333; cursor: pointer; transition: all 0.2s; }
+  .dot.on { background: #585858; width: 14px; border-radius: 3px; }
+  .kbd { position: fixed; bottom: 26px; right: 24px; font-size: 11px; color: #333; }
+
+  /* title slide */
+  .tc { text-align: center; }
+  .tc h1 { font-size: 30px; }
+  .tags { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 22px; }
+  .tag { background: #222; border: 1px solid #2e2e2e; border-radius: 5px; padding: 4px 12px; font-size: 11px; color: #585858; }
+
+  /* divider */
+  hr.d { border: none; border-top: 1px solid #2a2a2a; margin: 16px 0; }
+
+  /* step flow indicator */
+  .flow { display: flex; align-items: center; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
+  .flow-step { background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 5px; padding: 3px 10px; font-size: 11px; color: #505050; }
+  .flow-step.active-step { background: #1a2520; border-color: #304030; color: #608060; }
+  .flow-arrow { color: #383838; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<div id="counter"></div>
+<div class="slides">
+
+<!-- 0: TITLE -->
+<div class="slide active">
+  <div class="card tc">
+    <div class="badge intro" style="margin:0 auto 22px;">Forge Testing Skills</div>
+    <h1>Try It Yourself<br><span style="font-weight:400;color:#555;font-size:20px;">Cashback Calendar — Testing Flow</span></h1>
+    <p style="max-width:480px;margin:18px auto 0;color:#5a5a5a;font-size:14px;line-height:1.8;">Follow these steps to run the full Forge testing pipeline on the Cashback Calendar feature. Each slide has the exact command to run and what to expect.</p>
+    <div class="tags">
+      <span class="tag">forge:spec-tests</span>
+      <span class="tag">forge:plan</span>
+      <span class="tag">forge:build-tests</span>
+      <span class="tag">forge:spec-ui-e2e</span>
+      <span class="tag">forge:build-playwright-tests</span>
+    </div>
+    <div class="box info" style="margin-top:28px;text-align:left;">
+      <strong style="color:#5a88a8;">PRD:</strong> <a href="https://rakutenrewards.atlassian.net/wiki/x/LYCeYQo" style="color:#5a88a8;">Cashback Calendar — Confluence</a><br>
+      <strong style="color:#5a88a8;">Repo:</strong> Clone the <code style="color:#8ab0d0">workshop-start</code> branch — the app is pre-built and ready. You only run the testing skills.
+    </div>
+  </div>
+</div>
+
+<!-- 1: SETUP -->
+<div class="slide">
+  <div class="card">
+    <div class="badge prereq"><span class="num">Setup</span> Before you start</div>
+    <h1>Get the App Running</h1>
+    <p class="sub">The Cashback Calendar app is already built. Clone it, install deps, start the server — then run the testing skills.</p>
+
+    <div class="cmd">
+      <div class="cmd-top"><span class="cmd-lbl">Terminal — clone and start</span><button class="copy" onclick="cp(this)">Copy</button></div>
+      <div class="cmd-body">git clone https://github.com/rr-sairohith-vennu/cashback-calendar
+cd cashback-calendar
+git checkout workshop-start
+npm install
+npm run dev</div>
+    </div>
+
+    <div class="box good" style="margin-top:4px;">App is running at <strong>http://localhost:3000</strong> — open it in the browser to confirm before continuing.</div>
+
+    <hr class="d">
+
+    <p style="font-size:13px;color:#666;margin-bottom:6px;">Install Playwright MCP if you haven't already:</p>
+    <div class="cmd">
+      <div class="cmd-top"><span class="cmd-lbl">Terminal</span><button class="copy" onclick="cp(this)">Copy</button></div>
+      <div class="cmd-body">claude mcp add playwright -- npx @playwright/mcp@latest</div>
+    </div>
+    <p style="font-size:12px;color:#484848;margin-top:4px;"><strong style="color:#666">Restart Claude Code</strong> after running this. Then open the project in Claude Code and continue.</p>
+
+    <div class="box warn" style="margin-top:12px;"><strong>Model:</strong> Use <strong>Sonnet 4.6 at 200K context</strong>. Don't switch to 1M — it produces worse results for this workflow.</div>
+  </div>
+</div>
+
+<!-- 2: GAP ANALYSIS (Step 0.5) -->
+<div class="slide">
+  <div class="card">
+    <div class="badge step"><span class="num">Step 0.5</span> Gap Analysis</div>
+    <h1>Understand What's Missing</h1>
+    <p class="sub">Before writing any tests, understand what the existing codebase is missing. This is the starting point of the testing workflow.</p>
+
+    <div class="flow">
+      <span class="flow-step active-step">0.5 Gap Analysis</span>
+      <span class="flow-arrow">→</span><span class="flow-step">1 spec-tests</span>
+      <span class="flow-arrow">→</span><span class="flow-step">2 plan</span>
+      <span class="flow-arrow">→</span><span class="flow-step">3 build-tests</span>
+      <span class="flow-arrow">→</span><span class="flow-step">4 spec-ui-e2e</span>
+      <span class="flow-arrow">→</span><span class="flow-step">5 build-playwright</span>
+      <span class="flow-arrow">→</span><span class="flow-step">6 fix + run</span>
+    </div>
+
+    <div class="box tip">The gap analysis report is already pre-generated in the repo at <code style="color:#a090cc">.forge/efforts/cashback-calendar/validation/report.md</code> — read it before running anything.</div>
+
+    <div class="cmd">
+      <div class="cmd-top"><span class="cmd-lbl">Claude Code — ask Claude to summarise the gaps</span><button class="copy" onclick="cp(this)">Copy</button></div>
+      <div class="cmd-body">Read .forge/efforts/cashback-calendar/validation/report.md and summarise what test coverage is missing.</div>
+    </div>
+
+    <div class="two">
+      <div class="col">
+        <div class="col-t">What to look for</div>
+        <div class="col-b">Which BRs have no test scenario<br>Which API endpoints have no contract test<br>Which UI states have no Playwright spec</div>
+      </div>
+      <div class="col">
+        <div class="col-t">Why it matters</div>
+        <div class="col-b">forge:spec-tests uses these gaps to know what scenarios to generate. Understanding the gap first helps you evaluate whether the output is complete.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3: SPEC TESTS (Step 1) -->
+<div class="slide">
+  <div class="card">
+    <div class="badge step"><span class="num">Step 1</span> forge:spec-tests — ~5 min</div>
+    <h1>Generate the Test Suite</h1>
+    <p class="sub">Reads the requirements and generates BDD scenarios for every testable behaviour. No test code is written yet — this is the specification.</p>
+
+    <div class="flow">
+      <span class="flow-step">0.5 Gap Analysis</span>
+      <span class="flow-arrow">→</span><span class="flow-step active-step">1 spec-tests</span>
+      <span class="flow-arrow">→</span><span class="flow-step">2 plan</span>
+      <span class="flow-arrow">→</span><span class="flow-step">3 build-tests</span>
+      <span class="flow-arrow">→</span><span class="flow-step">4 spec-ui-e2e</span>
+      <span class="flow-arrow">→</span><span class="flow-step">5 build-playwright</span>
+      <span class="flow-arrow">→</span><span class="flow-step">6 fix + run</span>
+    </div>
+
+    <div class="cmd">
+      <div class="cmd-top"><span class="cmd-lbl">Claude Code</span><button class="copy" onclick="cp(this)">Copy</button></div>
+      <div class="cmd-body">/forge:spec-tests --type e2e</div>
+    </div>
+
+    <div class="box info">This generates <code style="color:#6a9fd8">e2e-test-suite.md</code> and <code style="color:#6a9fd8">ui-e2e-test-suite.md</code> under <code style="color:#6a9fd8">.forge/efforts/cashback-calendar/spec/test/</code> — markdown files with numbered BDD scenarios derived from the PRD requirements.</div>
+
+    <div class="ans" style="margin-top:12px;">
+      <div class="ans-lbl">Expected scenarios from the PRD</div>
+      <div class="ans-row"><span class="arr">›</span> User browses past months and sees historical bonus events</div>
+      <div class="ans-row"><span class="arr">›</span> User views upcoming events for next 30 days</div>
+      <div class="ans-row"><span class="arr">›</span> User filters calendar by category — sees only relevant events</div>
+      <div class="ans-row"><span class="arr">›</span> User sets email reminder — fires 24hr before event start</div>
+      <div class="ans-row"><span class="arr">›</span> Mobile: tap calendar day → merchant names + rates visible</div>
+    </div>
+
+    <div class="box warn" style="margin-top:10px;"><strong>Note:</strong> spec-tests also generates UI E2E scenarios. Don't run without <code>--type e2e</code> during the workshop — full run takes longer and includes integration/contract suites we're not covering today.</div>
+  </div>
+</div>
+
+<!-- 4: PLAN (Step 2) -->
+<div class="slide">
+  <div class="card">
+    <div class="badge step"><span class="num">Step 2</span> forge:plan — ~2 min</div>
+    <h1>Add Test Tasks to the Plan</h1>
+    <p class="sub">Reads the generated test suites and adds implementation tasks to the plan so forge:build-tests knows what to implement.</p>
+
+    <div class="flow">
+      <span class="flow-step">0.5 Gap</span>
+      <span class="flow-arrow">→</span><span class="flow-step">1 spec-tests</span>
+      <span class="flow-arrow">→</span><span class="flow-step active-step">2 plan</span>
+      <span class="flow-arrow">→</span><span class="flow-step">3 build-tests</span>
+      <span class="flow-arrow">→</span><span class="flow-step">4 spec-ui-e2e</span>
+      <span class="flow-arrow">→</span><span class="flow-step">5 build-playwright</span>
+      <span class="flow-arrow">→</span><span class="flow-step">6 fix + run</span>
+    </div>
+
+    <div class="cmd">
+      <div class="cmd-top"><span class="cmd-lbl">Claude Code</span><button class="copy" onclick="cp(this)">Copy</button></div>
+      <div class="cmd-body">/forge:plan</div>
+    </div>
+
+    <div class="box good" style="margin-top:12px;">Look for two new tasks added to <code style="color:#60a070">plan/tasks.md</code>:<br><strong style="color:#80c090">TASK-10</strong> — implement E2E tests (backend API)<br><strong style="color:#80c090">TASK-11</strong> — implement UI E2E tests (Playwright)</div>
+
+    <div class="box info">These task IDs are what forge:build-tests uses to know which test suite to implement. If you don't see them, re-run forge:plan.</div>
+  </div>
+</div>
+
+<!-- 5: BUILD TESTS (Step 3) -->
+<div class="slide">
+  <div class="card">
+    <div class="badge step"><span class="num">Step 3</span> forge:build-tests — ~8 min</div>
+    <h1>Build the E2E Test Code</h1>
+    <p class="sub">Reads the BDD scenarios, writes executable test code, runs them, and fixes any failures automatically. This is the backend API test.</p>
+
+    <div class="flow">
+      <span class="flow-step">1 spec-tests</span>
+      <span class="flow-arrow">→</span><span class="flow-step">2 plan</span>
+      <span class="flow-arrow">→</span><span class="flow-step active-step">3 build-tests</span>
+      <span class="flow-arrow">→</span><span class="flow-step">4 spec-ui-e2e</span>
+      <span class="flow-arrow">→</span><span class="flow-step">5 build-playwright</span>
+      <span class="flow-arrow">→</span><span class="flow-step">6 fix + run</span>
+    </div>
+
+    <div class="cmd">
+      <div class="cmd-top"><span class="cmd-lbl">Claude Code</span><button class="copy" onclick="cp(this)">Copy</button></div>
+      <div class="cmd-body">/forge:build-tests --type e2e-test</div>
+    </div>
+
+    <div class="box warn" style="margin-top:12px;"><strong>Watch for permission prompts.</strong> When Playwright MCP asks for permission to interact with the browser, answer <strong>Yes (for this session)</strong>. Don't click away — the skill is waiting for you.</div>
+
+    <div class="box info">While it runs (~8 min), open the test suite file it's working from:<br><code style="color:#6a9fd8">.forge/efforts/cashback-calendar/spec/test/e2e-test-suite.md</code><br>Read through the scenarios — understand what each one is asserting and why.</div>
+
+    <div class="two" style="margin-top:12px;">
+      <div class="col">
+        <div class="col-t">What it produces</div>
+        <div class="col-b">Test files in tests/ directory. Each BDD scenario becomes one test function. Runs headless first, fixes failures up to 3 cycles.</div>
+      </div>
+      <div class="col">
+        <div class="col-t">If it fails after 3 cycles</div>
+        <div class="col-b">It will stop and tell you the last error. Read it carefully — usually a missing endpoint or a selector that changed. Don't re-run blindly.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 6: SPEC UI E2E (Step 4) -->
+<div class="slide">
+  <div class="card">
+    <div class="badge step"><span class="num">Step 4</span> forge:spec-ui-e2e — ~2 min</div>
+    <h1>Generate Gherkin Feature Files</h1>
+    <p class="sub">Converts the ui-e2e-test-suite.md into Gherkin .feature files — the input format for forge:build-playwright-tests.</p>
+
+    <div class="flow">
+      <span class="flow-step">2 plan</span>
+      <span class="flow-arrow">→</span><span class="flow-step">3 build-tests</span>
+      <span class="flow-arrow">→</span><span class="flow-step active-step">4 spec-ui-e2e</span>
+      <span class="flow-arrow">→</span><span class="flow-step">5 build-playwright</span>
+      <span class="flow-arrow">→</span><span class="flow-step">6 fix + run</span>
+    </div>
+
+    <div class="cmd">
+      <div class="cmd-top"><span class="cmd-lbl">Claude Code</span><button class="copy" onclick="cp(this)">Copy</button></div>
+      <div class="cmd-body">/forge:spec-ui-e2e</div>
+    </div>
+
+    <div class="ans" style="margin-top:12px;">
+      <div class="ans-lbl">Answer the prompts</div>
+      <div class="ans-row"><span class="arr">›</span> Region → <strong style="color:#c8d0da">us</strong></div>
+      <div class="ans-row"><span class="arr">›</span> Feature area → <strong style="color:#c8d0da">cashback-calendar</strong></div>
+    </div>
+
+    <div class="box good" style="margin-top:12px;">Creates <code style="color:#60a070">features/us/cashback-calendar/</code> with one .feature file per UI surface: calendar-view.feature, event-detail.feature, reminders.feature, filters.feature</div>
+
+    <div class="box info">Open one of the .feature files after it completes. Each scenario is in Gherkin format: Given / When / Then. This is exactly what forge:build-playwright-tests will turn into runnable Playwright code.</div>
+  </div>
+</div>
+
+<!-- 7: BUILD PLAYWRIGHT (Step 5) -->
+<div class="slide">
+  <div class="card">
+    <div class="badge step"><span class="num">Step 5</span> forge:build-playwright-tests — ~15 min</div>
+    <h1>Build Playwright UI Tests</h1>
+    <p class="sub">Opens a real browser, discovers DOM selectors by interacting with the live app, writes .spec.ts files, runs them, and fixes failures.</p>
+
+    <div class="flow">
+      <span class="flow-step">3 build-tests</span>
+      <span class="flow-arrow">→</span><span class="flow-step">4 spec-ui-e2e</span>
+      <span class="flow-arrow">→</span><span class="flow-step active-step">5 build-playwright</span>
+      <span class="flow-arrow">→</span><span class="flow-step">6 fix + run</span>
+    </div>
+
+    <div class="cmd">
+      <div class="cmd-top"><span class="cmd-lbl">Claude Code</span><button class="copy" onclick="cp(this)">Copy</button></div>
+      <div class="cmd-body">/forge:build-playwright-tests us</div>
+    </div>
+
+    <div class="box warn" style="margin-top:10px;"><strong>First run only:</strong> If Playwright MCP wasn't installed yet, it installs now and asks you to restart Claude Code. After restarting, re-run the exact same command — it resumes from where it stopped.</div>
+
+    <div class="box tip">While it runs — this is the interesting part. The skill navigates to your running app (<strong>localhost:3000</strong>), queries the DOM to find real selectors, then writes test code based on what it actually finds. Watch the browser open and interact. You don't need to do anything — just observe.</div>
+
+    <div class="two" style="margin-top:12px;">
+      <div class="col">
+        <div class="col-t">Output</div>
+        <div class="col-b">tests/bdd/cashback-calendar/<br>calendar-view.spec.ts<br>event-detail.spec.ts<br>reminders.spec.ts<br>filters.spec.ts</div>
+      </div>
+      <div class="col">
+        <div class="col-t">What it checks</div>
+        <div class="col-b">Runs tests after writing. Fixes failing selectors up to 3 times. Runs validate.js at the end to confirm feature files are fully covered.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 8: FIX AND RUN (Step 6) -->
+<div class="slide">
+  <div class="card">
+    <div class="badge action"><span class="num">Step 6</span> Fix + Run Tests</div>
+    <h1>Fix Failures &amp; Run in Headed Mode</h1>
+    <p class="sub">If tests are failing, fix them. Then run in headed mode so you can see the browser interact with the calendar.</p>
+
+    <div class="flow">
+      <span class="flow-step">4 spec-ui-e2e</span>
+      <span class="flow-arrow">→</span><span class="flow-step">5 build-playwright</span>
+      <span class="flow-arrow">→</span><span class="flow-step active-step">6 fix + run</span>
+    </div>
+
+    <p style="font-size:13px;color:#777;margin-bottom:4px;">If tests are still failing after Step 5:</p>
+    <div class="cmd">
+      <div class="cmd-top"><span class="cmd-lbl">Fix failing tests</span><button class="copy" onclick="cp(this)">Copy</button></div>
+      <div class="cmd-body">/forge:build-playwright-tests us --fix</div>
+    </div>
+
+    <p style="font-size:13px;color:#777;margin-bottom:4px;margin-top:8px;">Once tests pass — run in headed slow mode:</p>
+    <div class="cmd">
+      <div class="cmd-top"><span class="cmd-lbl">Claude Code — type this as a message</span><button class="copy" onclick="cp(this)">Copy</button></div>
+      <div class="cmd-body">Run the Playwright tests in headed slow mode so I can see the browser</div>
+    </div>
+
+    <p style="font-size:13px;color:#777;margin-bottom:4px;margin-top:8px;">Or run directly from terminal:</p>
+    <div class="cmd">
+      <div class="cmd-top"><span class="cmd-lbl">Terminal</span><button class="copy" onclick="cp(this)">Copy</button></div>
+      <div class="cmd-body">npx playwright test tests/bdd/cashback-calendar/ --project=local-anonymous --headed --slow-mo=800</div>
+    </div>
+
+    <div class="box good" style="margin-top:10px;">You should see the browser open, navigate to the calendar, click days, open event details, set a reminder, apply filters — all automatically. Each step corresponds to a scenario from the BDD feature files.</div>
+  </div>
+</div>
+
+<!-- 9: TROUBLESHOOTING -->
+<div class="slide">
+  <div class="card">
+    <div class="badge warn"><span class="num">Help</span> Common problems</div>
+    <h1>Troubleshooting</h1>
+    <p class="sub">Things that commonly go wrong and how to fix them.</p>
+
+    <ul class="l">
+      <li><strong style="color:#ddd">Playwright MCP not found</strong> — Run <code>claude mcp add playwright -- npx @playwright/mcp@latest</code> then restart Claude Code. Re-run the command after restart.</li>
+      <li><strong style="color:#ddd">Tests fail after 3 cycles</strong> — Don't re-run blindly. Read the last error message. Usually a selector changed or an endpoint isn't running. Fix the root cause first.</li>
+      <li><strong style="color:#ddd">forge:build-tests finds no tasks</strong> — You skipped forge:plan or it didn't add the test tasks. Re-run <code>/forge:plan</code> and look for TASK-10 and TASK-11.</li>
+      <li><strong style="color:#ddd">forge:spec-ui-e2e asks for region</strong> — Answer <code>us</code>. It uses this to place .feature files in <code>features/us/</code>.</li>
+      <li><strong style="color:#ddd">Context window filling up</strong> — Run <code>/compact</code> in Claude Code. Then resume the skill you were running. Stay on 200K model.</li>
+      <li><strong style="color:#ddd">App not running</strong> — Make sure <code>npm run dev</code> is running in a separate terminal before running any test skill. Tests hit localhost:3000.</li>
+      <li><strong style="color:#ddd">Permission prompts keep appearing</strong> — When Playwright MCP asks, choose "Yes (for this session)" to allow all actions without being asked again.</li>
+      <li><strong style="color:#ddd">forge:validate says FAIL</strong> — A requirement has no covering spec. Run the spec skill for the missing domain (<code>/forge:spec-api</code> or <code>/forge:spec-storage</code>) then re-validate.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 10: CHEAT SHEET -->
+<div class="slide">
+  <div class="card">
+    <div class="badge step"><span class="num">Ref</span> All testing commands</div>
+    <h1>Complete Testing Flow</h1>
+    <div class="cmd">
+      <div class="cmd-top"><span class="cmd-lbl">Copy everything at once</span><button class="copy" onclick="cp(this)">Copy</button></div>
+      <div class="cmd-body"># Setup — run once
+git clone https://github.com/rr-sairohith-vennu/cashback-calendar
+cd cashback-calendar
+git checkout workshop-start
+npm install
+npm run dev   # keep this running in a separate terminal
+
+# Playwright MCP — install once, restart Claude Code after
+claude mcp add playwright -- npx @playwright/mcp@latest
+
+# ─── Testing flow ──────────────────────────────────────────────
+
+# Step 0.5 — understand gaps first
+# Read: .forge/efforts/cashback-calendar/validation/report.md
+
+# Step 1 — generate BDD test scenarios
+/forge:spec-tests --type e2e
+
+# Step 2 — add test tasks to plan
+/forge:plan
+
+# Step 3 — implement E2E test code (~8 min)
+/forge:build-tests --type e2e-test
+
+# Step 4 — generate Gherkin feature files
+/forge:spec-ui-e2e
+# prompts: region = us, feature area = cashback-calendar
+
+# Step 5 — build Playwright specs with live DOM discovery (~15 min)
+/forge:build-playwright-tests us
+
+# Step 6a — fix if anything is still failing
+/forge:build-playwright-tests us --fix
+
+# Step 6b — run in headed slow mode to see the browser
+# In Claude Code: "Run the Playwright tests in headed slow mode"
+# Or in terminal:
+npx playwright test tests/bdd/cashback-calendar/ --project=local-anonymous --headed --slow-mo=800</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /slides -->
+
+<nav>
+  <button class="nb" id="pb" onclick="nav(-1)" disabled>← Prev</button>
+  <div class="dots" id="dots"></div>
+  <button class="nb" id="nb" onclick="nav(1)">Next →</button>
+</nav>
+<div class="kbd">← → keys</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let cur = 0;
+
+  function buildDots() {
+    const c = document.getElementById('dots');
+    for (let i = 0; i < total; i++) {
+      const d = document.createElement('div');
+      d.className = 'dot' + (i===0?' on':'');
+      d.onclick = () => go(i);
+      c.appendChild(d);
+    }
+  }
+
+  function go(n) {
+    slides[cur].classList.remove('active');
+    document.querySelectorAll('.dot')[cur].classList.remove('on');
+    cur = Math.max(0, Math.min(n, total-1));
+    slides[cur].classList.add('active');
+    document.querySelectorAll('.dot')[cur].classList.add('on');
+    document.getElementById('pb').disabled = cur===0;
+    document.getElementById('nb').disabled = cur===total-1;
+    document.getElementById('counter').textContent = (cur+1)+' / '+total;
+    document.getElementById('progress-bar').style.width = ((cur+1)/total*100)+'%';
+  }
+
+  function nav(d) { go(cur+d); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key==='ArrowRight'||e.key==='ArrowDown') nav(1);
+    if (e.key==='ArrowLeft'||e.key==='ArrowUp') nav(-1);
+  });
+
+  function cp(btn) {
+    const code = btn.closest('.cmd').querySelector('.cmd-body').textContent;
+    navigator.clipboard.writeText(code.trim()).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('ok');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 1800);
+    });
+  }
+
+  buildDots();
+  go(0);
+</script>
+</body>
+</html>
