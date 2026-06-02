@@ -2,7 +2,7 @@
   "childIds": [],
   "coordinationRef": null,
   "createdAt": "2026-06-01T23:23:40Z",
-  "currentPhase": "discovery",
+  "currentPhase": "planning",
   "deployables": [],
   "graduation": {
     "graduated": false,
@@ -16,7 +16,7 @@
   "parentId": null,
   "phases": {
     "discovery": {
-      "approvedAt": null,
+      "approvedAt": "2026-06-02T00:08:43Z",
       "approvedBy": null,
       "artifacts": {
         "adrsCreated": [],
@@ -32,7 +32,7 @@
         }
       },
       "postApprovalModifications": [],
-      "status": "not_started"
+      "status": "approved"
     },
     "implementation": {
       "checkpoint": {
@@ -48,7 +48,7 @@
     "planning": {
       "artifacts": [],
       "postApprovalModifications": [],
-      "status": "not_started"
+      "status": "in_progress"
     },
     "qa": {
       "postApprovalModifications": [],
