@@ -1,0 +1,473 @@
+openapi: "3.1.0"
+info:
+  title: Student Verification API
+  description: Student identity verification and exclusive deals for Rakuten Rewards members.
+  version: "1.0.0"
+
+servers:
+  - url: http://localhost:3000
+
+tags:
+  - name: student_verifications
+    description: OTP-based .edu email verification flow
+  - name: student_deals
+    description: Student exclusive deals listing
+
+paths:
+
+  # ── Member-scoped verification flow (security.md R-1, contracts.md R-10) ──
+
+  /student-verification/v1/regions/{region_id}/members/me/student_verifications:
+    post:
+      tags: [student_verifications]
+      summary: Submit .edu email to initiate OTP verification
+      operationId: submitStudentVerification
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/ClientAgent'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitVerificationRequest'
+      responses:
+        '201':
+          description: OTP sent — verification record created
+          headers:
+            Location:
+              schema:
+                type: string
+              description: URI of the created verification record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+
+  /student-verification/v1/regions/{region_id}/members/me/student_verifications/verify:
+    post:
+      tags: [student_verifications]
+      summary: Confirm OTP code to complete student verification
+      operationId: verifyStudentOtp
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/ClientAgent'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyOtpRequest'
+      responses:
+        '200':
+          description: Verification successful — student status is now active
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+
+  /student-verification/v1/regions/{region_id}/members/me/student_verifications/resend:
+    post:
+      tags: [student_verifications]
+      summary: Resend OTP code (rate-limited to once per 60 seconds)
+      operationId: resendStudentOtp
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/ClientAgent'
+      responses:
+        '200':
+          description: OTP resent — new expiry returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResendOtpResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+
+  /student-verification/v1/regions/{region_id}/members/me/student_status:
+    get:
+      tags: [student_verifications]
+      summary: Get student verification status for the authenticated member
+      description: Drives homepage banner state — returns status for all three cases (none/pending/verified).
+      operationId: getStudentStatus
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/ClientAgent'
+      responses:
+        '200':
+          description: Student status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentStatusResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+
+  # ── Student deals (verified members only) ──
+
+  /student-verification/v1/student_deals:
+    get:
+      tags: [student_deals]
+      summary: List active student exclusive deals
+      description: Returns only active deals ordered by display_order. Requires verified student status (403 if not verified).
+      operationId: listStudentDeals
+      parameters:
+        - $ref: '#/components/parameters/ClientAgent'
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Pagination cursor (cursor-based, forward-only)
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        '200':
+          description: Active student deals
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentDealsListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: JWT (ebtoken) in Authorization header — security.md R-1
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: euid
+      description: JWT (ebtoken) in euid cookie — security.md R-1
+
+  parameters:
+    RegionId:
+      name: region_id
+      in: path
+      required: true
+      schema:
+        type: string
+        example: USA
+      description: Region identifier — contracts.md R-10
+    ClientAgent:
+      name: Client-Agent
+      in: header
+      required: true
+      schema:
+        type: string
+        example: rakedu-web/1.0.0
+      description: Application identifier — protocol.md R-1
+
+  schemas:
+
+    # ── Request schemas ──
+
+    SubmitVerificationRequest:
+      type: object
+      required: [edu_email]
+      properties:
+        edu_email:
+          type: string
+          format: email
+          pattern: '^[^@]+@[^@]+\.edu$'
+          description: Student .edu email address (PII)
+
+    VerifyOtpRequest:
+      type: object
+      required: [otp_code]
+      properties:
+        otp_code:
+          type: string
+          minLength: 6
+          maxLength: 6
+          description: One-time verification code sent to .edu address
+
+    # ── Resource schemas ──
+
+    StudentVerification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        member_id:
+          type: string
+          format: uuid
+        edu_email:
+          type: string
+          format: email
+          description: PII — .edu address on record
+        status:
+          type: string
+          enum: [pending, verified, expired, revoked]
+        verified_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: ISO 8601 UTC — data.md R-4
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: ISO 8601 UTC — verified_at + 12 months
+        otp_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: ISO 8601 UTC — OTP valid for 15 minutes from send
+        created_at:
+          type: string
+          format: date-time
+          description: ISO 8601 UTC — data.md R-4
+        updated_at:
+          type: string
+          format: date-time
+          description: ISO 8601 UTC — data.md R-4
+
+    StudentStatus:
+      type: object
+      properties:
+        is_verified:
+          type: boolean
+          description: True only when status=verified and expires_at is in the future
+        status:
+          type: string
+          enum: [none, pending, verified, expired, revoked]
+          description: none = no record exists
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: ISO 8601 UTC — null when status is none or pending
+        days_until_expiry:
+          type: integer
+          nullable: true
+          description: Null when not verified; negative when already expired
+
+    CashbackRate:
+      type: object
+      description: Cashback rate as value/scale tuple — data.md R-5 (avoids float precision loss)
+      required: [value, scale]
+      properties:
+        value:
+          type: integer
+          description: Integer numerator (e.g. 1250 for 12.50%)
+        scale:
+          type: integer
+          description: Decimal places (e.g. 2 means divide by 100)
+
+    StudentDeal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        merchant_name:
+          type: string
+        logo_url:
+          type: string
+          format: uri
+        cashback_rate:
+          $ref: '#/components/schemas/CashbackRate'
+        display_order:
+          type: integer
+
+    # ── Envelope response schemas ──
+
+    VerificationResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/StudentVerification'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    ResendOtpResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [otp_expires_at]
+          properties:
+            otp_expires_at:
+              type: string
+              format: date-time
+              description: New OTP expiry — ISO 8601 UTC
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    StudentStatusResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/StudentStatus'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    StudentDealsListResponse:
+      type: object
+      required: [data, pagination, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentDeal'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    # ── Common schemas ──
+
+    Meta:
+      type: object
+      required: [status, operation]
+      properties:
+        status:
+          type: object
+          required: [code]
+          properties:
+            code:
+              type: string
+              description: Human-readable status string — protocol.md R-6
+        operation:
+          type: object
+          required: [request_id]
+          properties:
+            request_id:
+              type: string
+              format: uuid
+              description: Request correlation UUID — protocol.md R-6
+
+    Pagination:
+      type: object
+      properties:
+        next:
+          type: string
+          nullable: true
+          description: Opaque cursor for next page; absent on last page — data.md R-2
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          properties:
+            field:
+              type: string
+            value:
+              type: string
+            constraint:
+              type: string
+        trace_id:
+          type: string
+          format: uuid
+
+    ErrorResponse:
+      type: object
+      required: [errors, meta]
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+          minItems: 1
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+  responses:
+    BadRequest:
+      description: Malformed or unparseable request — protocol.md R-7
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Missing or invalid credentials — protocol.md R-7
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Authenticated but insufficient permissions (e.g. not a verified student)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity:
+      description: Business rule violation (e.g. .edu already in use, max OTP attempts exceeded)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:
+      description: Rate limit exceeded — protocol.md R-3
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until the client may retry
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
