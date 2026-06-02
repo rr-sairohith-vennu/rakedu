@@ -60,7 +60,7 @@
     },
     "validation": {
       "artifacts": [],
-      "status": "not_started"
+      "status": "passed_with_concerns"
     },
     "verification": {
       "artifacts": {
