@@ -1,0 +1,11 @@
+// Prisma schema for Rakedu — Student Verification & Exclusive Deals
+// Effort: student-verification-exclusive-student-deals
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
