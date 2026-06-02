@@ -122,8 +122,8 @@
 
     <div class="cmd">
       <div class="cmd-top"><span class="cmd-lbl">Terminal — clone and start</span><button class="copy" onclick="cp(this)">Copy</button></div>
-      <div class="cmd-body">git clone https://github.com/rr-sairohith-vennu/cashback-calendar
-cd cashback-calendar
+      <div class="cmd-body">git clone https://github.com/rr-sairohith-vennu/rakcal
+cd rakcal
 git checkout workshop-start
 npm install
 npm run dev</div>
@@ -161,11 +161,11 @@ npm run dev</div>
       <span class="flow-arrow">→</span><span class="flow-step">6 fix + run</span>
     </div>
 
-    <div class="box tip">The gap analysis report is already pre-generated in the repo at <code style="color:#a090cc">.forge/efforts/cashback-calendar/validation/report.md</code> — read it before running anything.</div>
+    <div class="box tip">The gap analysis report is already pre-generated in the repo at <code style="color:#a090cc">.forge/efforts/rakcal/validation/report.md</code> — read it before running anything.</div>
 
     <div class="cmd">
       <div class="cmd-top"><span class="cmd-lbl">Claude Code — ask Claude to summarise the gaps</span><button class="copy" onclick="cp(this)">Copy</button></div>
-      <div class="cmd-body">Read .forge/efforts/cashback-calendar/validation/report.md and summarise what test coverage is missing.</div>
+      <div class="cmd-body">Read .forge/efforts/rakcal/validation/report.md and summarise what test coverage is missing.</div>
     </div>
 
     <div class="two">
@@ -203,7 +203,7 @@ npm run dev</div>
       <div class="cmd-body">/forge:spec-tests --type e2e</div>
     </div>
 
-    <div class="box info">This generates <code style="color:#6a9fd8">e2e-test-suite.md</code> and <code style="color:#6a9fd8">ui-e2e-test-suite.md</code> under <code style="color:#6a9fd8">.forge/efforts/cashback-calendar/spec/test/</code> — markdown files with numbered BDD scenarios derived from the PRD requirements.</div>
+    <div class="box info">This generates <code style="color:#6a9fd8">e2e-test-suite.md</code> and <code style="color:#6a9fd8">ui-e2e-test-suite.md</code> under <code style="color:#6a9fd8">.forge/efforts/rakcal/spec/test/</code> — markdown files with numbered BDD scenarios derived from the PRD requirements.</div>
 
     <div class="ans" style="margin-top:12px;">
       <div class="ans-lbl">Expected scenarios from the PRD</div>
@@ -269,7 +269,7 @@ npm run dev</div>
 
     <div class="box warn" style="margin-top:12px;"><strong>Watch for permission prompts.</strong> When Playwright MCP asks for permission to interact with the browser, answer <strong>Yes (for this session)</strong>. Don't click away — the skill is waiting for you.</div>
 
-    <div class="box info">While it runs (~8 min), open the test suite file it's working from:<br><code style="color:#6a9fd8">.forge/efforts/cashback-calendar/spec/test/e2e-test-suite.md</code><br>Read through the scenarios — understand what each one is asserting and why.</div>
+    <div class="box info">While it runs (~8 min), open the test suite file it's working from:<br><code style="color:#6a9fd8">.forge/efforts/rakcal/spec/test/e2e-test-suite.md</code><br>Read through the scenarios — understand what each one is asserting and why.</div>
 
     <div class="two" style="margin-top:12px;">
       <div class="col">
@@ -307,10 +307,10 @@ npm run dev</div>
     <div class="ans" style="margin-top:12px;">
       <div class="ans-lbl">Answer the prompts</div>
       <div class="ans-row"><span class="arr">›</span> Region → <strong style="color:#c8d0da">us</strong></div>
-      <div class="ans-row"><span class="arr">›</span> Feature area → <strong style="color:#c8d0da">cashback-calendar</strong></div>
+      <div class="ans-row"><span class="arr">›</span> Feature area → <strong style="color:#c8d0da">rakcal</strong></div>
     </div>
 
-    <div class="box good" style="margin-top:12px;">Creates <code style="color:#60a070">features/us/cashback-calendar/</code> with one .feature file per UI surface: calendar-view.feature, event-detail.feature, reminders.feature, filters.feature</div>
+    <div class="box good" style="margin-top:12px;">Creates <code style="color:#60a070">features/us/rakcal/</code> with one .feature file per UI surface: calendar-view.feature, event-detail.feature, reminders.feature, filters.feature</div>
 
     <div class="box info">Open one of the .feature files after it completes. Each scenario is in Gherkin format: Given / When / Then. This is exactly what forge:build-playwright-tests will turn into runnable Playwright code.</div>
   </div>
@@ -342,7 +342,7 @@ npm run dev</div>
     <div class="two" style="margin-top:12px;">
       <div class="col">
         <div class="col-t">Output</div>
-        <div class="col-b">tests/bdd/cashback-calendar/<br>calendar-view.spec.ts<br>event-detail.spec.ts<br>reminders.spec.ts<br>filters.spec.ts</div>
+        <div class="col-b">tests/bdd/rakcal/<br>calendar-view.spec.ts<br>event-detail.spec.ts<br>reminders.spec.ts<br>filters.spec.ts</div>
       </div>
       <div class="col">
         <div class="col-t">What it checks</div>
@@ -380,7 +380,7 @@ npm run dev</div>
     <p style="font-size:13px;color:#777;margin-bottom:4px;margin-top:8px;">Or run directly from terminal:</p>
     <div class="cmd">
       <div class="cmd-top"><span class="cmd-lbl">Terminal</span><button class="copy" onclick="cp(this)">Copy</button></div>
-      <div class="cmd-body">npx playwright test tests/bdd/cashback-calendar/ --project=local-anonymous --headed --slow-mo=800</div>
+      <div class="cmd-body">npx playwright test tests/bdd/rakcal/ --project=local-anonymous --headed --slow-mo=800</div>
     </div>
 
     <div class="box good" style="margin-top:10px;">You should see the browser open, navigate to the calendar, click days, open event details, set a reminder, apply filters — all automatically. Each step corresponds to a scenario from the BDD feature files.</div>
@@ -415,8 +415,8 @@ npm run dev</div>
     <div class="cmd">
       <div class="cmd-top"><span class="cmd-lbl">Copy everything at once</span><button class="copy" onclick="cp(this)">Copy</button></div>
       <div class="cmd-body"># Setup — run once
-git clone https://github.com/rr-sairohith-vennu/cashback-calendar
-cd cashback-calendar
+git clone https://github.com/rr-sairohith-vennu/rakcal
+cd rakcal
 git checkout workshop-start
 npm install
 npm run dev   # keep this running in a separate terminal
@@ -427,7 +427,7 @@ claude mcp add playwright -- npx @playwright/mcp@latest
 # ─── Testing flow ──────────────────────────────────────────────
 
 # Step 0.5 — understand gaps first
-# Read: .forge/efforts/cashback-calendar/validation/report.md
+# Read: .forge/efforts/rakcal/validation/report.md
 
 # Step 1 — generate BDD test scenarios
 /forge:spec-tests --type e2e
@@ -440,7 +440,7 @@ claude mcp add playwright -- npx @playwright/mcp@latest
 
 # Step 4 — generate Gherkin feature files
 /forge:spec-ui-e2e
-# prompts: region = us, feature area = cashback-calendar
+# prompts: region = us, feature area = rakcal
 
 # Step 5 — build Playwright specs with live DOM discovery (~15 min)
 /forge:build-playwright-tests us
@@ -451,7 +451,7 @@ claude mcp add playwright -- npx @playwright/mcp@latest
 # Step 6b — run in headed slow mode to see the browser
 # In Claude Code: "Run the Playwright tests in headed slow mode"
 # Or in terminal:
-npx playwright test tests/bdd/cashback-calendar/ --project=local-anonymous --headed --slow-mo=800</div>
+npx playwright test tests/bdd/rakcal/ --project=local-anonymous --headed --slow-mo=800</div>
     </div>
   </div>
 </div>
