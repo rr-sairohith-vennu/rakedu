@@ -10,6 +10,7 @@
     "graduatedTo": []
   },
   "id": "student-verification-exclusive-student-deals",
+  "jira": { "syncStatus": "pending" },
   "jiraKey": "PPE-1730",
   "jiraUrl": "https://rakutenrewards.atlassian.net/browse/PPE-1730",
   "openDecisions": [],
@@ -40,7 +41,9 @@
         "lastCompletedStep": null,
         "updatedAt": null
       },
-      "completedTasks": [],
+      "completedTasks": [
+        { "taskId": "TASK-001", "sha": "a44f011ac0a7ed01cb4347fabd99ac70b277081e" }
+      ],
       "postApprovalModifications": [],
       "remainingTasks": [],
       "status": "in_progress"

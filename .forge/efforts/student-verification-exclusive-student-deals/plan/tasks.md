@@ -56,6 +56,7 @@ Scaffold the Next.js 14 (App Router) project: initialise with `create-next-app`,
 **Satisfies:** TR-3
 **Standards:** none
 **Required tests:** none (scaffolding task)
+**Completed:** a44f011
 
 ---
 
