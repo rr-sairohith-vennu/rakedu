@@ -195,9 +195,9 @@
   <script>
     const SECTIONS = [
       { label: 'Setup', slideIds: ['step-setup'] },
-      { label: 'Spec Generation', slideIds: ['step-1', 'step-2', 'step-3'] },
-      { label: 'Build Tests', slideIds: ['step-4', 'step-5', 'step-6'] },
-      { label: 'Run Tests', slideIds: ['step-7'] },
+      { label: 'Spec Generation', slideIds: ['step-1', 'step-2'] },
+      { label: 'Build Tests', slideIds: ['step-3', 'step-4', 'step-5'] },
+      { label: 'Run Tests', slideIds: ['step-6'] },
       { label: 'Reference', slideIds: ['step-ref'] },
     ];
 
@@ -259,6 +259,43 @@ claude"></span></pre>
       },
       {
         type: 'step', num: '2', id: 'step-2',
+        title: 'forge:plan', desc: 'Add test tasks to the implementation plan — ~2 min',
+        content: `
+          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Reads the generated test suites and adds two test implementation tasks to the plan. <strong>forge:build-tests needs this before it can run</strong> — without it, there are no tasks to work from.</p>
+          <div class="cmd-block">
+            <pre><span class="t-cmd typing-text" data-type-text="/forge:plan"></span></pre>
+            <button class="copy-btn" onclick="copyText(this,'/forge:plan')">Copy</button>
+          </div>
+          <div class="success-box" style="margin-top:.75rem;">Look for two new tasks added to <code>plan/tasks.md</code> — one typed <strong>[e2e-test]</strong> for backend tests and one for UI tests.</div>
+          <div class="success-box" style="border-left-color:#ef4444;background:#fef2f2;margin-top:.5rem;">
+            <strong>Known issue:</strong> If forge:plan says "no open tasks" — type this nudge and it will add them:<br>
+            <em>"Why don't you add testing tasks for the new e2e test suite?"</em>
+          </div>
+        `
+      },
+      // ── BUILD TESTS ──
+      {
+        type: 'step', num: '3', id: 'step-3', sectionId: 'build',
+        title: 'forge:build-tests', desc: 'Implement backend API and E2E tests — ~8 min',
+        content: `
+          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Reads the BDD scenarios and implements the ones testable via HTTP (API routes + page rendering). Writes tests, runs them, and auto-fixes failures up to 3 cycles.</p>
+          <div class="cmd-block">
+            <pre><span class="t-cmd typing-text" data-type-text="/forge:build-tests --type e2e-test"></span></pre>
+            <button class="copy-btn" onclick="copyText(this,'/forge:build-tests --type e2e-test')">Copy</button>
+          </div>
+          <div class="substep-card">
+            <div class="substep-title">When it asks what to implement</div>
+            <p style="font-size:.84rem;color:var(--muted);line-height:1.7;">Choose <strong>Option 1</strong> — axios HTTP tests for API routes + HTTP-testable page scenarios. Browser interaction scenarios require Playwright and are handled in Step 5.</p>
+          </div>
+          <p style="font-size:.84rem;color:var(--muted);margin:.9rem 0 .4rem;">Output — written to <code style="background:var(--pale);padding:1px 5px;border-radius:4px;">tests/system/e2e/api/</code>:</p>
+          <div class="result-grid">
+            <div class="result-row"><span class="result-file">cashback-calendar.e2e.test.ts</span><span class="result-desc">13 tests — API routes + page renders</span><span class="result-pass">13 passing</span></div>
+          </div>
+          <div class="info-box" style="margin-top:.75rem;"><strong>Note:</strong> When it finishes it says "run with npm run test:e2e" — informational only. The skill already ran the tests. Continue to Step 4.</div>
+        `
+      },
+      {
+        type: 'step', num: '4', id: 'step-4', sectionId: 'build',
         title: 'forge:spec-ui-e2e', desc: 'Generate Gherkin feature files — ~2 min',
         content: `
           <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Converts <code>ui-e2e-test-suite.md</code> into Gherkin <code>.feature</code> files. <code>forge:build-playwright-tests</code> consumes these to generate Playwright specs.</p>
@@ -280,44 +317,7 @@ claude"></span></pre>
             <div class="result-row"><span class="result-file">event-detail.feature</span><span class="result-desc">Day click and merchant detail panel</span></div>
             <div class="result-row"><span class="result-file">filters.feature</span><span class="result-desc">Category and merchant filter scenarios</span></div>
           </div>
-          <div class="info-box" style="margin-top:.75rem;">Open any <code>.feature</code> file — each scenario is Given / When / Then. This is what forge:build-playwright-tests converts into runnable Playwright code.</div>
-        `
-      },
-      {
-        type: 'step', num: '3', id: 'step-3',
-        title: 'forge:plan', desc: 'Add test tasks to the implementation plan — ~2 min',
-        content: `
-          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Reads the generated test suites and adds two test implementation tasks to the plan. <code>forge:build-tests</code> needs these tasks to know what to implement.</p>
-          <div class="cmd-block">
-            <pre><span class="t-cmd typing-text" data-type-text="/forge:plan"></span></pre>
-            <button class="copy-btn" onclick="copyText(this,'/forge:plan')">Copy</button>
-          </div>
-          <div class="success-box" style="margin-top:.75rem;">Look for two new tasks added to <code>plan/tasks.md</code> — one typed <strong>[e2e-test]</strong> for backend tests and one for UI tests. These are what Steps 4 and 5 will implement.</div>
-          <div class="success-box" style="border-left-color:#ef4444;background:#fef2f2;margin-top:.5rem;">
-            <strong>Known issue:</strong> If forge:plan says "no open tasks" — type this nudge and it will add them:<br>
-            <em>"Why don't you add testing tasks for the new e2e test suite?"</em>
-          </div>
-        `
-      },
-      // ── BUILD TESTS ──
-      {
-        type: 'step', num: '4', id: 'step-4',
-        title: 'forge:build-tests', desc: 'Implement backend API and E2E tests — ~8 min',
-        content: `
-          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Reads the BDD scenarios and implements the ones testable via HTTP (API routes + page rendering). Writes tests, runs them, and auto-fixes failures up to 3 cycles.</p>
-          <div class="cmd-block">
-            <pre><span class="t-cmd typing-text" data-type-text="/forge:build-tests --type e2e-test"></span></pre>
-            <button class="copy-btn" onclick="copyText(this,'/forge:build-tests --type e2e-test')">Copy</button>
-          </div>
-          <div class="substep-card">
-            <div class="substep-title">When it asks what to implement</div>
-            <p style="font-size:.84rem;color:var(--muted);line-height:1.7;">Choose <strong>Option 1</strong> — axios HTTP tests for API routes + HTTP-testable page scenarios. Browser interaction scenarios require Playwright and are handled in Step 5.</p>
-          </div>
-          <p style="font-size:.84rem;color:var(--muted);margin:.9rem 0 .4rem;">Output — written to <code style="background:var(--pale);padding:1px 5px;border-radius:4px;">tests/system/e2e/api/</code>:</p>
-          <div class="result-grid">
-            <div class="result-row"><span class="result-file">cashback-calendar.e2e.test.ts</span><span class="result-desc">13 tests — API routes + page renders</span><span class="result-pass">13 passing</span></div>
-          </div>
-          <div class="info-box" style="margin-top:.75rem;"><strong>Note:</strong> When it finishes it says "run with npm run test:e2e" — that's just a reminder. The skill already ran the tests. Continue to Step 5.</div>
+          <div class="info-box" style="margin-top:.75rem;">Open any <code>.feature</code> file — each scenario is Given / When / Then. This is exactly what forge:build-playwright-tests converts into runnable code.</div>
         `
       },
       {
@@ -382,7 +382,7 @@ claude"></span></pre>
               <tr><td class="prompt-col">App not loading at localhost:3000</td><td><code>npm run dev</code> must be running in a separate terminal. Keep it open the entire time.</td></tr>
               <tr><td class="prompt-col">Playwright MCP not found</td><td>Run <code>claude mcp add playwright -- npx @playwright/mcp@latest</code> then restart Claude Code. Re-run the command after restart.</td></tr>
               <tr><td class="prompt-col">Permission prompts on every action</td><td>Choose <strong>"Yes, and don't ask again for this command"</strong> each time.</td></tr>
-              <tr><td class="prompt-col">forge:build-tests asks which option</td><td>Choose <strong>Option 1</strong> (axios/HTTP tests). Browser scenarios go to forge:build-playwright-tests in Step 4.</td></tr>
+              <tr><td class="prompt-col">forge:build-tests asks which option</td><td>Choose <strong>Option 1</strong> (axios/HTTP tests). Browser scenarios go to forge:build-playwright-tests in Step 5.</td></tr>
               <tr><td class="prompt-col">"run with npm run test:e2e" message</td><td>Informational only — the skill already ran the tests. Ignore it and continue to the next step.</td></tr>
               <tr><td class="prompt-col">forge:plan says "no open tasks"</td><td>Type: <em>"Why don't you add testing tasks for the new e2e test suite?"</em> — it will add them after the nudge.</td></tr>
               <tr><td class="prompt-col">Only e2e-test-suite.md generated, no ui-e2e-test-suite.md</td><td>Known intermittent issue. Re-run <code>/forge:spec-tests --type e2e</code> and it will generate both files.</td></tr>
@@ -449,9 +449,9 @@ claude"></span></pre>
         const groups = [
           { num: '⚙', title: 'Setup — Clone, start app, open Claude Code', mins: 3 },
           { num: '1', title: 'forge:spec-tests — Generate BDD scenarios', mins: 5 },
-          { num: '2', title: 'forge:spec-ui-e2e — Generate Gherkin files', mins: 2 },
-          { num: '3', title: 'forge:plan — Add test tasks to plan', mins: 2 },
-          { num: '4', title: 'forge:build-tests — Implement backend tests', mins: 8 },
+          { num: '2', title: 'forge:plan — Add test tasks to plan', mins: 2 },
+          { num: '3', title: 'forge:build-tests — Implement backend tests', mins: 8 },
+          { num: '4', title: 'forge:spec-ui-e2e — Generate Gherkin files', mins: 2 },
           { num: '5', title: 'forge:build-playwright-tests — Build UI tests', mins: 15 },
           { num: '6', title: 'Fix + Run — Run both test suites', mins: 5 },
         ];
