@@ -1,549 +1,578 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Forge Testing Skills — Cashback Calendar</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forge Testing Skills — Cashback Calendar</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f7f7f7; --surface: #ffffff; --surface2: #fafafa;
+      --border: #e0e0e0; --border2: #bbbbbb; --text: #111111;
+      --muted: #777777; --pale: #f2f2f2; --dark: #111111; --mid: #333333; --light: #666666;
+    }
+    html, body { height: 100%; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; display: flex; flex-direction: column; }
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #f0f0f0;
-    color: #1a1a1a;
-    height: 100vh;
-    overflow: hidden;
-  }
+    .header { background: linear-gradient(135deg, #000 0%, #1a1a1a 60%, #3a3a3a 100%); padding: 0.9rem 2rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px rgba(0,0,0,.25); flex-shrink: 0; position: relative; overflow: hidden; }
+    .header::before { content: ''; position: absolute; inset: 0; background: url('data:image/svg+xml,<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="30" r="1.2" fill="rgba(255,255,255,0.1)"/></svg>'); pointer-events: none; animation: bgmove 25s linear infinite; }
+    @keyframes bgmove { from { background-position: 0 0 } to { background-position: 60px 60px } }
+    .header-left { display: flex; align-items: center; gap: .75rem; position: relative; z-index: 1; }
+    .header-emoji { font-size: 1.8rem; animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-4px) } }
+    .header-title { color: #fff; font-size: 1.1rem; font-weight: 700; }
+    .header-sub { color: rgba(255,255,255,.75); font-size: .75rem; margin-top: 1px; }
+    .header-right { display: flex; align-items: center; gap: .6rem; position: relative; z-index: 1; }
+    .h-pill { background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.25); color: #fff; padding: .3rem .85rem; border-radius: 999px; font-size: .75rem; font-weight: 600; white-space: nowrap; }
+    .progress-bar-wrap { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,.15); }
+    .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #888, #fff); transition: width .35s ease; }
 
-  #progress-bar {
-    position: fixed; top: 0; left: 0; height: 2px;
-    background: #888; transition: width 0.4s cubic-bezier(.4,0,.2,1); z-index: 100;
-  }
+    .layout { display: flex; flex: 1; min-height: 0; position: relative; }
+    .sidebar { width: 280px; min-width: 180px; max-width: 480px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; transition: width .3s ease; position: relative; }
+    .sidebar.collapsed { width: 0 !important; border-right: none; }
+    .sidebar.collapsed .sidebar-resizer { display: none; }
+    .sidebar-resizer { position: absolute; top: 0; right: -3px; width: 6px; height: 100%; cursor: col-resize; z-index: 20; background: transparent; }
+    .sidebar-resizer:hover, .sidebar-resizer.dragging { background: var(--border2); }
+    .sidebar-head { padding: .8rem 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface2); flex-shrink: 0; }
+    .sidebar-head h3 { font-size: .72rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--dark); }
+    .collapse-btn { background: none; border: 1px solid var(--border); border-radius: 5px; cursor: pointer; padding: 2px 6px; color: var(--muted); font-size: .75rem; transition: all .15s; }
+    .collapse-btn:hover { background: var(--pale); color: var(--dark); border-color: var(--dark); }
+    .sidebar-list { overflow-y: auto; flex: 1; padding: .4rem 0; }
+    .sidebar-list::-webkit-scrollbar { width: 4px; }
+    .sidebar-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+    .sb-item { display: flex; align-items: flex-start; gap: .55rem; padding: .55rem 1rem; cursor: pointer; border-left: 3px solid transparent; transition: all .15s; overflow: hidden; }
+    .sb-item:hover { background: var(--pale); border-left-color: var(--light); }
+    .sb-item.active { background: var(--pale); border-left-color: var(--dark); }
+    .sb-item.done { border-left-color: #16a34a; }
+    .sb-dot { flex-shrink: 0; width: 20px; height: 20px; border-radius: 3px; background: var(--border); display: flex; align-items: center; justify-content: center; font-size: .62rem; font-weight: 700; color: var(--muted); margin-top: 1px; transition: all .2s; }
+    .sb-item.active .sb-dot { background: var(--dark); color: #fff; }
+    .sb-item.done .sb-dot { background: #16a34a; color: #fff; }
+    .sb-item.done .sb-dot::after { content: '✓'; font-size: .65rem; }
+    .sb-item.done .sb-dot .sb-num { display: none; }
+    .sb-label { font-size: .78rem; color: var(--text); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sb-sublabel { font-size: .68rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sb-section { padding: .65rem 1rem .3rem; font-size: .62rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); border-top: 1px solid var(--border); margin-top: .3rem; user-select: none; }
+    .sb-section:first-child { border-top: none; margin-top: 0; }
 
-  #counter {
-    position: fixed; top: 18px; right: 24px;
-    font-size: 11px; color: #aaa; letter-spacing: 0.04em; z-index: 100;
-  }
+    .expand-btn { position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 20px; height: 44px; background: var(--dark); border: none; border-radius: 0 5px 5px 0; color: #fff; cursor: pointer; display: none; align-items: center; justify-content: center; font-size: .65rem; z-index: 10; box-shadow: 2px 0 8px rgba(0,0,0,.2); }
+    .expand-btn.visible { display: flex; }
 
-  /* Slides */
-  .slides { width: 100%; height: 100vh; position: relative; }
-  .slide {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100vh;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    padding: 56px 80px;
-    opacity: 0; pointer-events: none;
-    transform: translateY(18px);
-    transition: opacity 0.45s cubic-bezier(.4,0,.2,1), transform 0.45s cubic-bezier(.4,0,.2,1);
-  }
-  .slide.active { opacity: 1; pointer-events: all; transform: translateY(0); }
-  .slide.exit { opacity: 0; transform: translateY(-18px); }
+    .slide-area { flex: 1; overflow: hidden; position: relative; }
+    .slide { position: absolute; inset: 0; overflow-y: auto; padding: 2rem 2.5rem 5rem; display: none; animation: fadeIn .22s ease; }
+    .slide.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: translateY(0) } }
+    .slide::-webkit-scrollbar { width: 5px; }
+    .slide::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
-  /* Card */
-  .card {
-    background: #fff;
-    border: 1px solid #e4e4e4;
-    border-radius: 16px;
-    padding: 40px 48px;
-    max-width: 820px; width: 100%;
-    max-height: 86vh; overflow-y: auto;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-  }
-  .card::-webkit-scrollbar { width: 3px; }
-  .card::-webkit-scrollbar-thumb { background: #d8d8d8; border-radius: 2px; }
+    /* Welcome */
+    .welcome-slide { display: grid; grid-template-columns: 1fr 1fr; gap: 0; height: 100%; }
+    .slide.welcome-active { padding: 0 !important; overflow: hidden !important; }
+    .wl-left { padding: 5rem 4rem; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid var(--border); }
+    .wl-eyebrow { display: flex; align-items: center; gap: .5rem; font-size: .72rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.5rem; }
+    .wl-left h1 { font-size: 3rem; font-weight: 800; color: var(--dark); line-height: 1.1; margin-bottom: 1.25rem; letter-spacing: -.5px; }
+    .wl-left p { font-size: .97rem; color: var(--muted); line-height: 1.65; max-width: 380px; margin-bottom: 2rem; }
+    .wl-meta { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem; }
+    .wl-meta-item { display: flex; align-items: center; gap: .4rem; font-size: .85rem; color: var(--text); }
+    .btn-begin { display: inline-flex; align-items: center; gap: .5rem; background: var(--dark); color: #fff; font-size: .9rem; font-weight: 700; padding: .75rem 1.6rem; border-radius: 9px; border: none; cursor: pointer; transition: opacity .2s; width: fit-content; }
+    .btn-begin:hover { opacity: .82; }
+    .wl-autosave { margin-top: .9rem; font-size: .75rem; color: var(--muted); }
+    .wl-right { padding: 4rem 3.5rem; overflow-y: auto; display: flex; flex-direction: column; justify-content: center; }
+    .wl-outline-label { font-size: .68rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.25rem; }
+    .outline-list { display: flex; flex-direction: column; gap: .65rem; }
+    .outline-item { display: flex; align-items: center; gap: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: .95rem 1.1rem; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+    .outline-item:hover { border-color: var(--border2); box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+    .oi-num { width: 34px; height: 34px; border-radius: 50%; background: var(--pale); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: .82rem; font-weight: 700; color: var(--dark); flex-shrink: 0; }
+    .oi-body { flex: 1; }
+    .oi-title { font-size: .92rem; font-weight: 600; color: var(--dark); margin-bottom: .18rem; }
+    .oi-meta { font-size: .75rem; color: var(--muted); }
+    .oi-arrow { color: var(--border2); font-size: 1rem; margin-left: auto; flex-shrink: 0; }
 
-  /* Badge */
-  .badge {
-    display: inline-flex; align-items: center; gap: 7px;
-    border-radius: 20px; padding: 4px 13px;
-    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
-    margin-bottom: 16px; border: 1px solid #e0e0e0;
-    background: #f5f5f5; color: #888;
-    font-weight: 500;
-  }
-  .badge .num {
-    background: #ececec; border-radius: 10px;
-    padding: 1px 7px; font-size: 10px; color: #666;
-  }
-  .badge.step { border-color: #d8d8d8; color: #555; }
-  .badge.action { border-color: #c8dcc8; background: #f2f7f2; color: #4a7a4a; }
-  .badge.warn { border-color: #ddd0c0; background: #faf5ee; color: #8a6a30; }
+    /* Step slides */
+    .step-slide { max-width: 800px; margin: 0 auto; }
+    .step-header { display: flex; align-items: center; gap: .85rem; margin-bottom: 1.4rem; }
+    .step-badge { flex-shrink: 0; width: 42px; height: 42px; border-radius: 6px; background: var(--dark); display: flex; align-items: center; justify-content: center; font-size: 1.05rem; font-weight: 800; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+    .step-title h2 { font-size: 1.28rem; font-weight: 700; color: var(--text); }
+    .step-title p { font-size: .82rem; color: var(--muted); margin-top: 2px; }
 
-  h1 { font-size: 24px; font-weight: 600; color: #111; margin-bottom: 6px; line-height: 1.3; }
-  .sub { font-size: 13px; color: #888; margin-bottom: 20px; line-height: 1.7; }
+    /* Blocks */
+    .info-box { background: var(--pale); border: 1px solid var(--border); border-radius: 9px; padding: .85rem 1rem; margin: .9rem 0; font-size: .84rem; color: var(--text); line-height: 1.6; }
+    .success-box { background: var(--pale); border: 1px solid var(--border2); border-left: 4px solid var(--dark); border-radius: 0 9px 9px 0; padding: .85rem 1rem; margin: .9rem 0; font-size: .84rem; color: var(--text); line-height: 1.6; }
+    .cmd-block { background: #111; border-radius: 9px; padding: .9rem 1.1rem; margin: .9rem 0; position: relative; box-shadow: 0 4px 14px rgba(0,0,0,.18); display: flex; align-items: flex-start; gap: 0; overflow: hidden; }
+    .cmd-block pre { color: #e0e0e0; font-family: 'SF Mono', 'Fira Code', monospace; font-size: .82rem; white-space: pre; line-height: 1.65; flex: 1; min-width: 0; overflow-x: auto; }
+    .t-cmd { color: #fff; font-weight: 600; }
+    .t-cmt { color: #555; font-style: italic; }
+    .typing-cursor { display: inline-block; color: #aaa; animation: blink .9s step-end infinite; }
+    @keyframes blink { 0%,100% { opacity: 1 } 50% { opacity: 0 } }
+    .copy-btn { position: sticky; right: .55rem; top: .55rem; align-self: flex-start; flex-shrink: 0; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); color: rgba(255,255,255,.8); border-radius: 5px; padding: 2px 9px; font-size: .68rem; font-weight: 600; cursor: pointer; transition: all .15s; margin-left: .5rem; }
+    .copy-btn:hover { background: rgba(255,255,255,.22); color: #fff; }
+    .copy-btn.copied { background: #333; color: #fff; border-color: #333; }
+    .prompt-block { background: var(--surface2); border: 1px solid var(--border); border-left: 4px solid var(--dark); border-radius: 0 9px 9px 0; padding: .85rem 1rem; margin: .9rem 0; position: relative; }
+    .prompt-label { font-size: .65rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--dark); margin-bottom: .45rem; }
+    .prompt-block p { font-size: .88rem; color: var(--text); line-height: 1.6; padding-right: 3.5rem; }
+    .prompt-block .copy-btn { background: var(--pale); border: 1px solid var(--border2); color: var(--dark); }
+    .prompt-block .copy-btn:hover { background: var(--dark); color: #fff; border-color: var(--dark); }
+    .dialog-table { width: 100%; border-collapse: collapse; margin: .7rem 0; font-size: .82rem; }
+    .dialog-table th { background: var(--pale); color: var(--dark); padding: .45rem .75rem; text-align: left; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; border-bottom: 1px solid var(--border); }
+    .dialog-table td { padding: .5rem .75rem; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+    .dialog-table tr:last-child td { border-bottom: none; }
+    .dialog-table .prompt-col { color: var(--muted); font-style: italic; font-size: .8rem; }
+    .dialog-table .answer-col code { background: var(--dark); color: #fff; padding: 1px 7px; border-radius: 4px; font-size: .77rem; font-weight: 600; }
+    .result-grid { display: flex; flex-direction: column; gap: .35rem; margin: .7rem 0; }
+    .result-row { display: flex; align-items: baseline; gap: .7rem; font-size: .8rem; padding: .28rem 0; border-bottom: 1px solid var(--border); }
+    .result-row:last-child { border-bottom: none; }
+    .result-file { font-family: 'SF Mono', monospace; font-size: .75rem; color: var(--dark); min-width: 260px; flex-shrink: 0; }
+    .result-desc { color: var(--muted); flex: 1; }
+    .substep-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.15rem; margin: .9rem 0; }
+    .substep-title { font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--dark); margin-bottom: .7rem; display: flex; align-items: center; gap: .4rem; }
+    .substep-title::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--dark); flex-shrink: 0; }
+    hr.div { border: none; border-top: 1px solid var(--border); margin: 1.1rem 0; }
 
-  /* Command block */
-  .cmd {
-    background: #1c1c1c; border-radius: 10px;
-    overflow: hidden; margin: 10px 0;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
-  }
-  .cmd-top {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 14px; background: #242424; border-bottom: 1px solid #2e2e2e;
-  }
-  .cmd-lbl { font-size: 10px; color: #585858; letter-spacing: 0.1em; text-transform: uppercase; }
-  .copy {
-    background: none; border: 1px solid #3a3a3a; border-radius: 5px;
-    color: #666; font-size: 11px; padding: 3px 10px; cursor: pointer;
-    transition: all 0.15s;
-  }
-  .copy:hover { background: #333; color: #ccc; border-color: #555; }
-  .copy.ok { color: #6a9a6a; border-color: #4a7a4a; }
-  .cmd-body {
-    padding: 14px 16px;
-    font-family: 'SF Mono', 'Fira Code', 'Menlo', monospace;
-    font-size: 12.5px; color: #d4dae4; line-height: 1.7;
-    white-space: pre; overflow-x: auto;
-  }
+    /* Complete */
+    .complete-slide { max-width: 640px; margin: 1.5rem auto; text-align: center; }
+    .complete-emoji { font-size: 3.5rem; margin-bottom: .9rem; }
+    .complete-slide h1 { font-size: 2rem; font-weight: 800; color: var(--dark); margin-bottom: .7rem; }
+    .complete-slide > p { color: var(--muted); font-size: .95rem; margin-bottom: 1.5rem; }
+    .stats-row { display: flex; justify-content: center; gap: 1.25rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .stat-box { background: var(--pale); border: 1px solid var(--border2); border-radius: 10px; padding: .85rem 1.35rem; min-width: 90px; }
+    .stat-num { font-size: 1.7rem; font-weight: 800; color: var(--dark); }
+    .stat-label { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; margin-top: 2px; }
+    .btn-primary { display: inline-block; background: var(--dark); color: #fff; font-size: .92rem; font-weight: 700; padding: .7rem 2.25rem; border-radius: 999px; border: none; cursor: pointer; transition: opacity .2s, transform .15s; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+    .btn-primary:hover { opacity: .85; transform: translateY(-2px); }
 
-  /* Answer */
-  .ans {
-    background: #f7faf7; border: 1px solid #d8ead8;
-    border-radius: 9px; padding: 12px 15px; margin: 10px 0;
-  }
-  .ans-lbl { font-size: 10px; color: #4a7a4a; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
-  .ans-row { display: flex; gap: 9px; margin-bottom: 5px; font-size: 13px; color: #3a5a3a; align-items: flex-start; }
-  .ans-row:last-child { margin-bottom: 0; }
-  .arr { color: #4a7a4a; flex-shrink: 0; margin-top: 2px; font-size: 10px; }
+    /* Nav bar */
+    .nav-bar { background: var(--surface); border-top: 1px solid var(--border); padding: .65rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; box-shadow: 0 -2px 10px rgba(0,0,0,.04); }
+    .nav-btn { background: var(--dark); color: #fff; border: none; border-radius: 999px; padding: .5rem 1.5rem; font-size: .85rem; font-weight: 600; cursor: pointer; transition: opacity .2s, transform .15s; }
+    .nav-btn:hover:not(:disabled) { opacity: .85; transform: translateY(-1px); }
+    .nav-btn:disabled { background: var(--border); color: var(--muted); cursor: default; }
+    .nav-btn.sec { background: var(--pale); color: var(--dark); border: 1px solid var(--border2); }
+    .nav-btn.sec:hover:not(:disabled) { background: var(--border); }
+    .nav-hint { font-size: .72rem; color: var(--muted); }
 
-  /* Info boxes */
-  .box { border-radius: 8px; padding: 11px 14px; margin: 10px 0; font-size: 12.5px; line-height: 1.7; }
-  .box.info { background: #f4f7fb; border: 1px solid #d0dcea; border-left: 3px solid #7090b8; color: #4a6a8a; }
-  .box.warn { background: #fdf8f0; border: 1px solid #e8d8b8; border-left: 3px solid #b8904a; color: #7a5a28; }
-  .box.good { background: #f4faf4; border: 1px solid #c8e4c8; border-left: 3px solid #5a9a5a; color: #3a6a3a; }
-  .box.tip  { background: #f8f4fc; border: 1px solid #dcccea; border-left: 3px solid #9070b8; color: #604888; }
-  .box.note { background: #f8f8f8; border: 1px solid #e0e0e0; border-left: 3px solid #aaa; color: #555; }
-
-  /* List */
-  ul.l { list-style: none; margin: 6px 0; }
-  ul.l li { display: flex; gap: 9px; padding: 5px 0; font-size: 13px; color: #555; line-height: 1.6; border-bottom: 1px solid #f0f0f0; }
-  ul.l li:last-child { border-bottom: none; }
-  ul.l li::before { content: "—"; color: #ccc; flex-shrink: 0; }
-
-  /* Two col */
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-  .col { background: #f8f8f8; border: 1px solid #e8e8e8; border-radius: 8px; padding: 14px; }
-  .col-t { font-size: 10px; color: #aaa; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 7px; }
-  .col-b { font-size: 12.5px; color: #666; line-height: 1.6; }
-
-  /* Flow indicator */
-  .flow { display: flex; align-items: center; gap: 5px; margin-bottom: 18px; flex-wrap: wrap; }
-  .flow-step {
-    background: #f0f0f0; border: 1px solid #e0e0e0;
-    border-radius: 5px; padding: 3px 10px;
-    font-size: 11px; color: #aaa;
-    transition: all 0.2s;
-  }
-  .flow-step.on { background: #1c1c1c; border-color: #1c1c1c; color: #fff; }
-  .flow-arrow { color: #ccc; font-size: 10px; }
-
-  hr.d { border: none; border-top: 1px solid #ececec; margin: 18px 0; }
-
-  /* Title slide */
-  .tc { text-align: center; }
-  .tc h1 { font-size: 28px; }
-  .tags { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
-  .tag { background: #f0f0f0; border: 1px solid #e0e0e0; border-radius: 5px; padding: 4px 12px; font-size: 11px; color: #888; }
-
-  /* Nav */
-  nav {
-    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
-    display: flex; gap: 10px; align-items: center; z-index: 100;
-  }
-  .nb {
-    background: #fff; border: 1px solid #e0e0e0;
-    border-radius: 8px; color: #888; font-size: 13px;
-    padding: 7px 20px; cursor: pointer;
-    transition: all 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-  }
-  .nb:hover { background: #f4f4f4; color: #333; border-color: #ccc; }
-  .nb:disabled { opacity: 0.3; cursor: not-allowed; }
-  .dots { display: flex; gap: 5px; align-items: center; padding: 0 6px; }
-  .dot { width: 5px; height: 5px; border-radius: 50%; background: #ddd; cursor: pointer; transition: all 0.25s; }
-  .dot.on { background: #888; width: 16px; border-radius: 3px; }
-  .kbd { position: fixed; bottom: 28px; right: 24px; font-size: 11px; color: #ccc; }
-</style>
+    /* Toast */
+    .toast { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%) translateY(16px); background: var(--dark); color: #fff; padding: .55rem 1.3rem; border-radius: 999px; font-size: .8rem; font-weight: 600; opacity: 0; pointer-events: none; transition: all .22s ease; z-index: 9999; white-space: nowrap; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
 </head>
 <body>
-<div id="progress-bar"></div>
-<div id="counter"></div>
-<div class="slides">
-
-<!-- TITLE -->
-<div class="slide active">
-  <div class="card tc">
-    <div class="badge" style="margin: 0 auto 20px;">Forge Testing Skills</div>
-    <h1>Cashback Calendar<br><span style="font-weight:400;color:#aaa;font-size:19px;">Run the testing pipeline yourself</span></h1>
-    <p style="max-width:480px;margin:14px auto 0;color:#aaa;font-size:13.5px;line-height:1.85;">The app is pre-built. Clone it, start it, and follow the steps. Each slide has the exact command and what to expect.</p>
-    <div class="tags">
-      <span class="tag">forge:spec-tests</span>
-      <span class="tag">forge:build-tests</span>
-      <span class="tag">forge:spec-ui-e2e</span>
-      <span class="tag">forge:build-playwright-tests</span>
+  <div class="header">
+    <div class="header-left">
+      <span class="header-emoji">📅</span>
+      <div>
+        <div class="header-title">Cashback Calendar — Forge Testing Skills</div>
+        <div class="header-sub">Lunch &amp; Learn · QA Platform Engineering</div>
+      </div>
     </div>
-    <div class="box info" style="margin-top:24px;text-align:left;max-width:480px;margin-left:auto;margin-right:auto;">
-      <strong>PRD:</strong> <a href="https://rakutenrewards.atlassian.net/wiki/x/LYCeYQo" style="color:#5a80a8;">Cashback Calendar — Confluence</a><br>
-      <strong>Repo:</strong> <a href="https://github.com/rr-sairohith-vennu/rakcal" style="color:#5a80a8;">github.com/rr-sairohith-vennu/rakcal</a> — branch: <code style="color:#5a80a8;">workshop-start</code>
+    <div class="header-right">
+      <div class="h-pill">Step <span id="cur-slide">1</span> / <span id="tot-slides">—</span></div>
+      <div class="h-pill">Progress: <span id="progress-pct">0%</span></div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
     </div>
   </div>
-</div>
 
-<!-- SETUP -->
-<div class="slide">
-  <div class="card">
-    <div class="badge step"><span class="num">Setup</span> Do this first</div>
-    <h1>Get the App Running</h1>
-    <p class="sub">The app is pre-built with a seeded database. Clone, install, and start — that's it.</p>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-resizer" id="sidebar-resizer"></div>
+      <div class="sidebar-head">
+        <h3>Steps</h3>
+        <button class="collapse-btn" onclick="toggleSidebar()">◀</button>
+      </div>
+      <div class="sidebar-list" id="sidebar-list"></div>
+    </aside>
+    <button class="expand-btn" id="expand-btn" onclick="toggleSidebar()">▶</button>
+    <div class="slide-area" id="slide-area"></div>
+  </div>
 
-    <div class="cmd">
-      <div class="cmd-top"><span class="cmd-lbl">Terminal — clone, install, and start</span><button class="copy" onclick="cp(this)">Copy</button></div>
-      <div class="cmd-body">git clone https://github.com/rr-sairohith-vennu/rakcal
+  <div class="nav-bar">
+    <button class="nav-btn sec" id="prev-btn" onclick="prevSlide()" disabled>← Back</button>
+    <span class="nav-hint">← → arrow keys also work</span>
+    <button class="nav-btn" id="next-btn" onclick="nextSlide()">Next →</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SECTIONS = [
+      { label: 'Setup', slideIds: ['step-setup'] },
+      { label: 'Spec Generation', slideIds: ['step-1', 'step-2'] },
+      { label: 'Build & Run Tests', slideIds: ['step-3', 'step-4', 'step-5'] },
+      { label: 'Reference', slideIds: ['step-ref'] },
+    ];
+
+    const slides = [
+      { type: 'welcome', title: 'Welcome' },
+      {
+        type: 'step', num: '⚙', id: 'step-setup',
+        title: 'Setup', desc: 'Clone, start the app, open in Claude Code',
+        content: `
+          <div class="info-box"><strong>The app is already built.</strong> You are running the <strong>testing skills only</strong> — no implementation needed.</div>
+          <p style="font-size:.9rem;color:var(--muted);margin:.9rem 0 .5rem;font-weight:600;">Step 1 — Clone and start the app:</p>
+          <div class="cmd-block">
+            <pre><span class="t-cmd typing-text" data-type-text="git clone https://github.com/rr-sairohith-vennu/rakcal
 cd rakcal
 git checkout workshop-start
 npm install
-npm run dev</div>
-    </div>
+npm run dev"></span></pre>
+            <button class="copy-btn" onclick="copyText(this,'git clone https://github.com/rr-sairohith-vennu/rakcal\ncd rakcal\ngit checkout workshop-start\nnpm install\nnpm run dev')">Copy</button>
+          </div>
+          <div class="success-box">Open <strong>http://localhost:3000</strong> — you should see the Cashback Calendar with events on the grid. Keep this terminal running.</div>
+          <hr class="div">
+          <p style="font-size:.9rem;color:var(--muted);margin-bottom:.5rem;font-weight:600;">Step 2 — Install Playwright MCP (needed for Step 5):</p>
+          <div class="cmd-block">
+            <pre><span class="t-cmd typing-text" data-type-text="claude mcp add playwright -- npx @playwright/mcp@latest"></span></pre>
+            <button class="copy-btn" onclick="copyText(this,'claude mcp add playwright -- npx @playwright/mcp@latest')">Copy</button>
+          </div>
+          <div class="success-box" style="border-left-color:#ef4444;background:#fef2f2;"><strong>⚠️ Restart Claude Code after this.</strong> Then open the rakcal folder in Claude Code and continue.</div>
+          <hr class="div">
+          <p style="font-size:.9rem;color:var(--muted);margin-bottom:.5rem;font-weight:600;">Step 3 — Open rakcal in Claude Code, then continue below.</p>
+          <div class="info-box">When Claude Code asks permission for a bash command — select <strong>"Yes, and don't ask again for this command"</strong> to avoid repeated prompts.</div>
+        `
+      },
+      {
+        type: 'step', num: '0.5', id: 'step-0-5',
+        title: 'Gap Analysis', desc: 'Read the validation report before writing any tests',
+        content: `
+          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.9rem;">A validation report was pre-generated when the app was built. Read it first — it tells you exactly what test coverage is missing and why.</p>
+          <div class="prompt-block">
+            <div class="prompt-label">Type this in Claude Code</div>
+            <p>Read .forge/efforts/cashback-calendar/validation/report.md and summarise what test coverage is missing.</p>
+            <button class="copy-btn" onclick="copyText(this,'Read .forge/efforts/cashback-calendar/validation/report.md and summarise what test coverage is missing.')">Copy</button>
+          </div>
+          <div class="substep-card" style="margin-top:1rem;">
+            <div class="substep-title">What to look for</div>
+            <ul style="padding-left:1.2rem;line-height:1.9;font-size:.87rem;color:var(--muted);">
+              <li>Which BRs (business requirements) have no covering test scenario</li>
+              <li>Which API endpoints are untested</li>
+              <li>Which UI states have no Playwright spec</li>
+            </ul>
+          </div>
+          <div class="info-box" style="margin-top:.75rem;">Understanding the gaps first helps you evaluate whether the output from forge:spec-tests is complete — rather than accepting whatever it generates blindly.</div>
+        `
+      },
+      {
+        type: 'step', num: '1', id: 'step-1',
+        title: 'forge:spec-tests', desc: 'Generate BDD test scenarios from requirements',
+        content: `
+          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Reads the requirements, API spec, storage spec, and UI spec. Generates numbered BDD scenarios (Given/When/Then) — this is the specification layer, no test code yet.</p>
+          <div class="cmd-block">
+            <pre><span class="t-cmd typing-text" data-type-text="/forge:spec-tests --type e2e"></span></pre>
+            <button class="copy-btn" onclick="copyText(this,'/forge:spec-tests --type e2e')">Copy</button>
+          </div>
+          <p style="font-size:.84rem;color:var(--muted);margin:.9rem 0 .4rem;">Output — written to <code style="background:var(--pale);padding:1px 5px;border-radius:4px;">.forge/efforts/cashback-calendar/spec/test/</code>:</p>
+          <div class="result-grid">
+            <div class="result-row"><span class="result-file">e2e-test-suite.md</span><span class="result-desc">System/API scenarios — 13 scenarios</span></div>
+            <div class="result-row"><span class="result-file">ui-e2e-test-suite.md</span><span class="result-desc">UI browser scenarios — 13 scenarios</span></div>
+          </div>
+          <div class="success-box" style="border-left-color:#ef4444;background:#fef2f2;margin-top:.75rem;">
+            <strong>⚠️ When it finishes, ignore the "Next steps" suggestion.</strong> forge:spec-tests will suggest running forge:spec-ui-e2e directly. Don't. Follow this guide — Step 2 is forge:build-tests.
+          </div>
+          <div class="info-box" style="margin-top:.5rem;">While it runs (~5 min), open <code>e2e-test-suite.md</code> and read through the scenarios — understand what each one is asserting before the test code is written.</div>
+        `
+      },
+      {
+        type: 'step', num: '2', id: 'step-2',
+        title: 'forge:build-tests', desc: 'Implement API and E2E test code — ~8 min',
+        content: `
+          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Reads the BDD scenarios and implements the ones testable via HTTP (API routes + page rendering). Writes tests, runs them, and auto-fixes failures up to 3 cycles.</p>
+          <div class="cmd-block">
+            <pre><span class="t-cmd typing-text" data-type-text="/forge:build-tests --type e2e-test"></span></pre>
+            <button class="copy-btn" onclick="copyText(this,'/forge:build-tests --type e2e-test')">Copy</button>
+          </div>
+          <div class="substep-card">
+            <div class="substep-title">When it asks what to implement</div>
+            <p style="font-size:.84rem;color:var(--muted);line-height:1.7;">Choose <strong>Option 1</strong> — axios HTTP tests for API routes + HTTP-testable page scenarios. Browser interaction scenarios (click, modal, keyboard) require Playwright and are handled in Step 4.</p>
+          </div>
+          <p style="font-size:.84rem;color:var(--muted);margin:.9rem 0 .4rem;">Output — written to <code style="background:var(--pale);padding:1px 5px;border-radius:4px;">tests/system/e2e/api/</code>:</p>
+          <div class="result-grid">
+            <div class="result-row"><span class="result-file">cashback-calendar.e2e.test.ts</span><span class="result-desc">13 tests — API routes + page renders</span><span class="result-pass">13 passing</span></div>
+          </div>
+          <div class="info-box" style="margin-top:.75rem;"><strong>Note:</strong> At the end it says "run with npm run test:e2e" — informational only. The skill already ran and confirmed all tests pass. You don't need to run anything.</div>
+        `
+      },
+      {
+        type: 'step', num: '3', id: 'step-3',
+        title: 'forge:spec-ui-e2e', desc: 'Generate Gherkin feature files — ~2 min',
+        content: `
+          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Converts <code>ui-e2e-test-suite.md</code> into Gherkin <code>.feature</code> files — the format forge:build-playwright-tests reads to write Playwright specs.</p>
+          <div class="cmd-block">
+            <pre><span class="t-cmd typing-text" data-type-text="/forge:spec-ui-e2e"></span></pre>
+            <button class="copy-btn" onclick="copyText(this,'/forge:spec-ui-e2e')">Copy</button>
+          </div>
+          <p style="font-size:.84rem;color:var(--muted);margin:.9rem 0 .4rem;">Answer the prompts:</p>
+          <table class="dialog-table">
+            <thead><tr><th>Forge asks</th><th>Your answer</th></tr></thead>
+            <tbody>
+              <tr><td class="prompt-col">Which region?</td><td class="answer-col"><code>us</code></td></tr>
+              <tr><td class="prompt-col">Which feature area?</td><td class="answer-col"><code>cashback-calendar</code></td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:.84rem;color:var(--muted);margin:.75rem 0 .4rem;">Output — written to <code style="background:var(--pale);padding:1px 5px;border-radius:4px;">features/us/cashback-calendar/</code>:</p>
+          <div class="result-grid">
+            <div class="result-row"><span class="result-file">calendar-view.feature</span><span class="result-desc">Calendar grid and navigation scenarios</span></div>
+            <div class="result-row"><span class="result-file">event-detail.feature</span><span class="result-desc">Day click and merchant detail panel</span></div>
+            <div class="result-row"><span class="result-file">filters.feature</span><span class="result-desc">Category and merchant filter scenarios</span></div>
+          </div>
+          <div class="info-box" style="margin-top:.75rem;">Open any <code>.feature</code> file — each scenario is Given / When / Then. This is exactly what forge:build-playwright-tests converts into runnable code.</div>
+        `
+      },
+      {
+        type: 'step', num: '4', id: 'step-4',
+        title: 'forge:build-playwright-tests', desc: 'Build and run Playwright UI tests — ~15 min',
+        content: `
+          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Opens a real browser, discovers DOM selectors by interacting with the live app, writes <code>.spec.ts</code> files, runs them headlessly, and auto-fixes failures.</p>
+          <div class="cmd-block">
+            <pre><span class="t-cmd typing-text" data-type-text="/forge:build-playwright-tests us"></span></pre>
+            <button class="copy-btn" onclick="copyText(this,'/forge:build-playwright-tests us')">Copy</button>
+          </div>
+          <div class="success-box" style="border-left-color:#ef4444;background:#fef2f2;">
+            <strong>First run only:</strong> If Playwright MCP wasn't installed yet, it installs now and asks you to restart Claude Code. After restarting, run the same command again.
+          </div>
+          <div class="substep-card" style="margin-top:.75rem;">
+            <div class="substep-title">What to watch</div>
+            <p style="font-size:.84rem;color:var(--muted);line-height:1.7;">A browser opens and navigates the calendar automatically — clicking days, opening the event detail panel, applying filters. This is live DOM discovery. You don't need to interact — just observe.</p>
+          </div>
+          <p style="font-size:.84rem;color:var(--muted);margin:.9rem 0 .4rem;">Output — written to <code style="background:var(--pale);padding:1px 5px;border-radius:4px;">tests/bdd/cashback-calendar/</code>:</p>
+          <div class="result-grid">
+            <div class="result-row"><span class="result-file">calendar-view.spec.ts</span><span class="result-desc">Calendar grid, navigation, today highlight</span></div>
+            <div class="result-row"><span class="result-file">event-detail.spec.ts</span><span class="result-desc">Day click → merchant panel → store link</span></div>
+            <div class="result-row"><span class="result-file">filters.spec.ts</span><span class="result-desc">Category + merchant typeahead filter</span></div>
+          </div>
+        `
+      },
+      {
+        type: 'step', num: '5', id: 'step-5',
+        title: 'Fix + Run Headed', desc: 'Fix failures and watch tests run in the browser',
+        content: `
+          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">If any tests are still failing, fix them. Then run in headed slow mode to see every scenario execute in a visible browser.</p>
+          <p style="font-size:.84rem;color:var(--muted);margin-bottom:.4rem;font-weight:600;">Fix if anything is still failing:</p>
+          <div class="cmd-block">
+            <pre><span class="t-cmd typing-text" data-type-text="/forge:build-playwright-tests us --fix"></span></pre>
+            <button class="copy-btn" onclick="copyText(this,'/forge:build-playwright-tests us --fix')">Copy</button>
+          </div>
+          <p style="font-size:.84rem;color:var(--muted);margin:.9rem 0 .4rem;font-weight:600;">Run with a visible browser:</p>
+          <div class="cmd-block">
+            <pre><span class="t-cmd typing-text" data-type-text="npx playwright test tests/bdd/cashback-calendar/ --project=local-anonymous --headed --slow-mo=800"></span></pre>
+            <button class="copy-btn" onclick="copyText(this,'npx playwright test tests/bdd/cashback-calendar/ --project=local-anonymous --headed --slow-mo=800')">Copy</button>
+          </div>
+          <div class="success-box" style="margin-top:.75rem;">Watch the browser navigate months, click event days, verify merchant details, apply filters — each action is a BDD scenario that traces back to the original PRD user stories. From requirements to passing tests in one flow.</div>
+        `
+      },
+      {
+        type: 'step', num: '?', id: 'step-ref',
+        title: 'Troubleshooting', desc: 'Common problems and how to fix them',
+        content: `
+          <table class="dialog-table">
+            <thead><tr><th>Problem</th><th>Fix</th></tr></thead>
+            <tbody>
+              <tr><td class="prompt-col">App not loading at localhost:3000</td><td><code>npm run dev</code> must be running in a separate terminal. Keep it open the entire time.</td></tr>
+              <tr><td class="prompt-col">Playwright MCP not found</td><td>Run <code>claude mcp add playwright -- npx @playwright/mcp@latest</code> then restart Claude Code. Re-run the command after restart.</td></tr>
+              <tr><td class="prompt-col">Permission prompts on every action</td><td>Choose <strong>"Yes, and don't ask again for this command"</strong> each time.</td></tr>
+              <tr><td class="prompt-col">forge:build-tests asks which option</td><td>Choose <strong>Option 1</strong> (axios/HTTP tests). Browser scenarios go to forge:build-playwright-tests in Step 4.</td></tr>
+              <tr><td class="prompt-col">"run with npm run test:e2e" message</td><td>Informational only — the skill already ran the tests. Ignore it and continue to the next step.</td></tr>
+              <tr><td class="prompt-col">forge:spec-tests suggests forge:spec-ui-e2e next</td><td>Ignore the suggestion. Follow this guide — Step 2 is <code>forge:build-tests</code>, not forge:spec-ui-e2e.</td></tr>
+              <tr><td class="prompt-col">Tests fail after 3 cycles</td><td>Stop. Read the last error carefully before re-running. Usually a selector changed or the server isn't running.</td></tr>
+              <tr><td class="prompt-col">forge:spec-ui-e2e asks for region</td><td>Answer <code>us</code>, feature area <code>cashback-calendar</code>.</td></tr>
+              <tr><td class="prompt-col">Context window filling up</td><td>Run <code>/compact</code> in Claude Code, then resume the skill.</td></tr>
+            </tbody>
+          </table>
+        `
+      },
+      { type: 'complete', title: 'Done' }
+    ];
 
-    <div class="box good">Open <strong>http://localhost:3000</strong> — you should see the Cashback Calendar with events on the grid. No DB setup needed.</div>
+    let current = 0;
+    let doneSet = new Set(JSON.parse(localStorage.getItem('forge_done') || '[]'));
+    let maxReached = parseInt(localStorage.getItem('forge_reached') || '0', 10);
+    function saveDone() { localStorage.setItem('forge_done', JSON.stringify([...doneSet])); }
+    function saveReached() { localStorage.setItem('forge_reached', maxReached); }
 
-    <hr class="d">
+    function build() {
+      const area = document.getElementById('slide-area');
+      const list = document.getElementById('sidebar-list');
+      document.getElementById('tot-slides').textContent = slides.length;
 
-    <p style="font-size:13px;color:#888;margin-bottom:8px;">Install Playwright MCP (needed for Step 4):</p>
-    <div class="cmd">
-      <div class="cmd-top"><span class="cmd-lbl">Terminal</span><button class="copy" onclick="cp(this)">Copy</button></div>
-      <div class="cmd-body">claude mcp add playwright -- npx @playwright/mcp@latest</div>
-    </div>
-    <div class="box warn"><strong>Restart Claude Code after this.</strong> Then open the rakcal folder in Claude Code and continue from here.</div>
-  </div>
-</div>
+      const sectionBySlideId = {};
+      SECTIONS.forEach(sec => sec.slideIds.forEach(sid => sectionBySlideId[sid] = sec.label));
+      const emittedSections = new Set();
 
-<!-- STEP 0.5: GAP ANALYSIS -->
-<div class="slide">
-  <div class="card">
-    <div class="badge step"><span class="num">Step 0.5</span> Gap Analysis</div>
-    <h1>Read the Gap Report</h1>
-    <p class="sub">A validation report was pre-generated when the app was built. Read it before running anything — it shows exactly what test coverage is missing.</p>
+      slides.forEach((s, i) => {
+        const el = document.createElement('div');
+        el.className = 'slide' + (i === 0 ? ' active' + (s.type === 'welcome' ? ' welcome-active' : '') : '');
+        el.id = 'slide-' + i;
+        el.innerHTML = renderSlide(s, i);
+        area.appendChild(el);
 
-    <div class="flow">
-      <span class="flow-step on">0.5 Gap</span>
-      <span class="flow-arrow">→</span><span class="flow-step">1 spec-tests</span>
-      <span class="flow-arrow">→</span><span class="flow-step">2 build-tests</span>
-      <span class="flow-arrow">→</span><span class="flow-step">3 spec-ui-e2e</span>
-      <span class="flow-arrow">→</span><span class="flow-step">4 build-playwright</span>
-      <span class="flow-arrow">→</span><span class="flow-step">5 fix + run</span>
-    </div>
+        if (s.id && sectionBySlideId[s.id] && !emittedSections.has(sectionBySlideId[s.id])) {
+          const secEl = document.createElement('div');
+          secEl.className = 'sb-section';
+          secEl.textContent = sectionBySlideId[s.id];
+          list.appendChild(secEl);
+          emittedSections.add(sectionBySlideId[s.id]);
+        }
 
-    <div class="cmd">
-      <div class="cmd-top"><span class="cmd-lbl">Claude Code — type this as a message</span><button class="copy" onclick="cp(this)">Copy</button></div>
-      <div class="cmd-body">Read .forge/efforts/cashback-calendar/validation/report.md and summarise what test coverage is missing.</div>
-    </div>
+        const li = document.createElement('div');
+        li.className = 'sb-item' + (i === 0 ? ' active' : '') + (doneSet.has(i) ? ' done' : '');
+        li.id = 'sb-' + i;
+        li.onclick = () => goTo(i);
 
-    <div class="two">
-      <div class="col">
-        <div class="col-t">What to look for</div>
-        <div class="col-b">Which BRs have no test<br>Which API endpoints are untested<br>Which UI states have no spec</div>
-      </div>
-      <div class="col">
-        <div class="col-t">Why it matters</div>
-        <div class="col-b">forge:spec-tests uses these gaps to decide what scenarios to generate. Reading first helps you judge the output.</div>
-      </div>
-    </div>
-  </div>
-</div>
+        let dotContent, labelText, subText;
+        if (s.type === 'welcome') { dotContent = '★'; labelText = 'Welcome'; subText = 'Start here'; }
+        else if (s.type === 'complete') { dotContent = '✦'; labelText = 'Complete'; subText = 'All done'; }
+        else { dotContent = s.num; labelText = s.num === '?' ? 'Troubleshooting' : s.num === '⚙' ? 'Setup' : s.num === '0.5' ? 'Step 0.5 — Gap Analysis' : 'Step ' + s.num; subText = s.title; }
 
-<!-- STEP 1: SPEC TESTS -->
-<div class="slide">
-  <div class="card">
-    <div class="badge step"><span class="num">Step 1</span> forge:spec-tests — ~5 min</div>
-    <h1>Generate BDD Scenarios</h1>
-    <p class="sub">Reads the requirements and generates numbered BDD scenarios. No test code yet — this is the specification layer.</p>
+        li.innerHTML = `<div class="sb-dot"><span class="sb-num">${dotContent}</span></div><div style="flex:1;min-width:0;"><div class="sb-label">${labelText}</div>${subText ? `<div class="sb-sublabel">${subText}</div>` : ''}</div>`;
+        list.appendChild(li);
+      });
 
-    <div class="flow">
-      <span class="flow-step">0.5 Gap</span>
-      <span class="flow-arrow">→</span><span class="flow-step on">1 spec-tests</span>
-      <span class="flow-arrow">→</span><span class="flow-step">2 build-tests</span>
-      <span class="flow-arrow">→</span><span class="flow-step">3 spec-ui-e2e</span>
-      <span class="flow-arrow">→</span><span class="flow-step">4 build-playwright</span>
-      <span class="flow-arrow">→</span><span class="flow-step">5 fix + run</span>
-    </div>
-
-    <div class="cmd">
-      <div class="cmd-top"><span class="cmd-lbl">Claude Code</span><button class="copy" onclick="cp(this)">Copy</button></div>
-      <div class="cmd-body">/forge:spec-tests --type e2e</div>
-    </div>
-
-    <div class="box info">
-      Output → <code>.forge/efforts/cashback-calendar/spec/test/</code><br>
-      <strong>e2e-test-suite.md</strong> — system/API scenarios<br>
-      <strong>ui-e2e-test-suite.md</strong> — UI browser scenarios<br>
-      Open these files and read through the scenarios while the next steps run.
-    </div>
-
-    <div class="box warn">When it finishes, it suggests running <code>forge:spec-ui-e2e</code> next. <strong>Ignore that.</strong> Follow this guide — Step 2 is <code>forge:build-tests</code>.</div>
-  </div>
-</div>
-
-<!-- STEP 2: BUILD TESTS -->
-<div class="slide">
-  <div class="card">
-    <div class="badge step"><span class="num">Step 2</span> forge:build-tests — ~8 min</div>
-    <h1>Build API &amp; E2E Tests</h1>
-    <p class="sub">Implements the HTTP-testable scenarios as axios tests hitting localhost:3000. Browser interaction scenarios are handled in Step 4.</p>
-
-    <div class="flow">
-      <span class="flow-step">0.5 Gap</span>
-      <span class="flow-arrow">→</span><span class="flow-step">1 spec-tests</span>
-      <span class="flow-arrow">→</span><span class="flow-step on">2 build-tests</span>
-      <span class="flow-arrow">→</span><span class="flow-step">3 spec-ui-e2e</span>
-      <span class="flow-arrow">→</span><span class="flow-step">4 build-playwright</span>
-      <span class="flow-arrow">→</span><span class="flow-step">5 fix + run</span>
-    </div>
-
-    <div class="cmd">
-      <div class="cmd-top"><span class="cmd-lbl">Claude Code</span><button class="copy" onclick="cp(this)">Copy</button></div>
-      <div class="cmd-body">/forge:build-tests --type e2e-test</div>
-    </div>
-
-    <div class="ans">
-      <div class="ans-lbl">When it asks what to implement</div>
-      <div class="ans-row"><span class="arr">›</span> Choose <strong>Option 1</strong> — axios HTTP tests for API routes + HTTP-testable page scenarios</div>
-    </div>
-
-    <div class="two" style="margin-top:8px;">
-      <div class="col">
-        <div class="col-t">What it tests</div>
-        <div class="col-b">GET /cashback-calendar/v1/events<br>GET /cashback-calendar/v1/events/:id<br>GET /cashback-calendar/v1/merchants<br>Page renders (SC-1, SC-3, SC-7, SC-9)</div>
-      </div>
-      <div class="col">
-        <div class="col-t">What it skips</div>
-        <div class="col-b">Browser clicks, modal open/close, keyboard events — those need Playwright (Step 4).</div>
-      </div>
-    </div>
-
-    <div class="box note" style="margin-top:10px;"><strong>Note:</strong> At the end it says "run with npm run test:e2e" — that's just a reminder for manual use. The skill already ran the tests. You don't need to run anything.</div>
-  </div>
-</div>
-
-<!-- STEP 3: SPEC UI E2E -->
-<div class="slide">
-  <div class="card">
-    <div class="badge step"><span class="num">Step 3</span> forge:spec-ui-e2e — ~2 min</div>
-    <h1>Generate Gherkin Feature Files</h1>
-    <p class="sub">Converts ui-e2e-test-suite.md into Gherkin .feature files — the format forge:build-playwright-tests reads to write Playwright specs.</p>
-
-    <div class="flow">
-      <span class="flow-step">1 spec-tests</span>
-      <span class="flow-arrow">→</span><span class="flow-step">2 build-tests</span>
-      <span class="flow-arrow">→</span><span class="flow-step on">3 spec-ui-e2e</span>
-      <span class="flow-arrow">→</span><span class="flow-step">4 build-playwright</span>
-      <span class="flow-arrow">→</span><span class="flow-step">5 fix + run</span>
-    </div>
-
-    <div class="cmd">
-      <div class="cmd-top"><span class="cmd-lbl">Claude Code</span><button class="copy" onclick="cp(this)">Copy</button></div>
-      <div class="cmd-body">/forge:spec-ui-e2e</div>
-    </div>
-
-    <div class="ans">
-      <div class="ans-lbl">Answer the prompts</div>
-      <div class="ans-row"><span class="arr">›</span> Region → <strong>us</strong></div>
-      <div class="ans-row"><span class="arr">›</span> Feature area → <strong>cashback-calendar</strong></div>
-    </div>
-
-    <div class="box good">
-      Output → <code>features/us/cashback-calendar/</code><br>
-      One .feature file per surface: calendar-view.feature, event-detail.feature, filters.feature
-    </div>
-
-    <div class="box info">Open any .feature file — each scenario is Given / When / Then. This is exactly what forge:build-playwright-tests converts to Playwright code.</div>
-  </div>
-</div>
-
-<!-- STEP 4: BUILD PLAYWRIGHT -->
-<div class="slide">
-  <div class="card">
-    <div class="badge step"><span class="num">Step 4</span> forge:build-playwright-tests — ~15 min</div>
-    <h1>Build Playwright UI Tests</h1>
-    <p class="sub">Opens a real browser, discovers DOM selectors from the live app, writes .spec.ts files, runs them, and fixes failures automatically.</p>
-
-    <div class="flow">
-      <span class="flow-step">2 build-tests</span>
-      <span class="flow-arrow">→</span><span class="flow-step">3 spec-ui-e2e</span>
-      <span class="flow-arrow">→</span><span class="flow-step on">4 build-playwright</span>
-      <span class="flow-arrow">→</span><span class="flow-step">5 fix + run</span>
-    </div>
-
-    <div class="cmd">
-      <div class="cmd-top"><span class="cmd-lbl">Claude Code</span><button class="copy" onclick="cp(this)">Copy</button></div>
-      <div class="cmd-body">/forge:build-playwright-tests us</div>
-    </div>
-
-    <div class="box warn"><strong>First run only:</strong> If Playwright MCP wasn't installed yet, it installs now and asks you to restart Claude Code. After restarting, run the same command again.</div>
-
-    <div class="box tip">Watch the browser open and interact with the calendar automatically — navigating months, clicking event days, opening the detail modal. This is the live DOM discovery phase where it finds real selectors.</div>
-
-    <div class="box info">Output → <code>tests/bdd/cashback-calendar/</code> — one .spec.ts per .feature file. Runs headless, fixes up to 3 cycles, then runs validate.js.</div>
-  </div>
-</div>
-
-<!-- STEP 5: FIX AND RUN -->
-<div class="slide">
-  <div class="card">
-    <div class="badge action"><span class="num">Step 5</span> Fix + Run</div>
-    <h1>Fix Failures &amp; Run Headed</h1>
-    <p class="sub">If any tests are still failing, fix them. Then run with a visible browser so you can watch every scenario execute.</p>
-
-    <div class="flow">
-      <span class="flow-step">3 spec-ui-e2e</span>
-      <span class="flow-arrow">→</span><span class="flow-step">4 build-playwright</span>
-      <span class="flow-arrow">→</span><span class="flow-step on">5 fix + run</span>
-    </div>
-
-    <p style="font-size:13px;color:#888;margin-bottom:6px;">If tests are still failing after Step 4:</p>
-    <div class="cmd">
-      <div class="cmd-top"><span class="cmd-lbl">Fix</span><button class="copy" onclick="cp(this)">Copy</button></div>
-      <div class="cmd-body">/forge:build-playwright-tests us --fix</div>
-    </div>
-
-    <p style="font-size:13px;color:#888;margin-bottom:6px;margin-top:10px;">Run all tests headed with slow motion:</p>
-    <div class="cmd">
-      <div class="cmd-top"><span class="cmd-lbl">Terminal</span><button class="copy" onclick="cp(this)">Copy</button></div>
-      <div class="cmd-body">npx playwright test tests/bdd/cashback-calendar/ --project=local-anonymous --headed --slow-mo=800</div>
-    </div>
-
-    <div class="box good">Watch the browser navigate months, click event days, open merchant details, apply filters — all driven by the BDD scenarios you generated in Step 1.</div>
-  </div>
-</div>
-
-<!-- TROUBLESHOOTING -->
-<div class="slide">
-  <div class="card">
-    <div class="badge warn"><span class="num">Help</span> Troubleshooting</div>
-    <h1>Common Problems</h1>
-
-    <ul class="l">
-      <li><strong>API returns HTML instead of JSON</strong> — Dev server not running. Make sure <code>npm run dev</code> is running in a separate terminal.</li>
-      <li><strong>App not loading at localhost:3000</strong> — <code>npm run dev</code> must be running in a separate terminal. Keep it open the entire time.</li>
-      <li><strong>Playwright MCP not found</strong> — Run <code>claude mcp add playwright -- npx @playwright/mcp@latest</code> then restart Claude Code.</li>
-      <li><strong>Permission prompts keep appearing</strong> — Choose "Yes (and don't ask again for this command)" each time.</li>
-      <li><strong>forge:build-tests asks which option</strong> — Choose Option 1 (axios/HTTP). Browser scenarios go to forge:build-playwright-tests in Step 4.</li>
-      <li><strong>"Run with npm run test:e2e" message</strong> — Informational only. The skill already ran the tests. You don't need to do anything.</li>
-      <li><strong>Tests fail after 3 cycles</strong> — Read the last error carefully before re-running. Usually a selector changed or the server isn't running.</li>
-      <li><strong>forge:spec-ui-e2e asks for region</strong> — Answer <code>us</code>, feature area <code>cashback-calendar</code>.</li>
-      <li><strong>Context window filling up</strong> — Run <code>/compact</code> in Claude Code, then resume the skill.</li>
-    </ul>
-  </div>
-</div>
-
-<!-- CHEAT SHEET -->
-<div class="slide">
-  <div class="card">
-    <div class="badge"><span class="num">Ref</span> All commands</div>
-    <h1>Complete Flow</h1>
-    <div class="cmd">
-      <div class="cmd-top"><span class="cmd-lbl">Everything in order</span><button class="copy" onclick="cp(this)">Copy</button></div>
-      <div class="cmd-body"># ── Setup ────────────────────────────────────────────────────
-git clone https://github.com/rr-sairohith-vennu/rakcal
-cd rakcal
-git checkout workshop-start
-npm install
-npm run dev          # keep running in a separate terminal
-
-# Install Playwright MCP (once — restart Claude Code after)
-claude mcp add playwright -- npx @playwright/mcp@latest
-
-# ── Open rakcal in Claude Code, then run ──────────────────────
-
-# Step 0.5 — read gap report
-# Ask Claude: "Read .forge/efforts/cashback-calendar/validation/report.md and summarise gaps"
-
-# Step 1 — generate BDD scenarios (~5 min)
-/forge:spec-tests --type e2e
-
-# Step 2 — build API/E2E tests (~8 min)  →  choose Option 1
-/forge:build-tests --type e2e-test
-
-# Step 3 — generate Gherkin feature files (~2 min)
-/forge:spec-ui-e2e
-# prompts: region = us, feature area = cashback-calendar
-
-# Step 4 — build Playwright specs (~15 min)
-/forge:build-playwright-tests us
-
-# Step 5 — fix if needed, then run headed
-/forge:build-playwright-tests us --fix
-npx playwright test tests/bdd/cashback-calendar/ --project=local-anonymous --headed --slow-mo=800</div>
-    </div>
-  </div>
-</div>
-
-</div>
-
-<nav>
-  <button class="nb" id="pb" onclick="nav(-1)" disabled>← Prev</button>
-  <div class="dots" id="dots"></div>
-  <button class="nb" id="nb" onclick="nav(1)">Next →</button>
-</nav>
-<div class="kbd">← → keys</div>
-
-<script>
-  const slides = document.querySelectorAll('.slide');
-  const total = slides.length;
-  let cur = 0;
-  let animating = false;
-
-  function buildDots() {
-    const c = document.getElementById('dots');
-    for (let i = 0; i < total; i++) {
-      const d = document.createElement('div');
-      d.className = 'dot' + (i===0?' on':'');
-      d.onclick = () => go(i);
-      c.appendChild(d);
+      updateNav();
+      updateProgress();
     }
-  }
 
-  function go(n) {
-    if (animating || n === cur) return;
-    animating = true;
-    const prev = cur;
-    cur = Math.max(0, Math.min(n, total-1));
+    function renderSlide(s, idx) {
+      if (s.type === 'welcome') {
+        const groups = [
+          { num: '⚙', title: 'Setup — Clone, start app, open Claude Code', mins: 3 },
+          { num: '0.5', title: 'Gap Analysis — Read the validation report', mins: 2 },
+          { num: '1', title: 'forge:spec-tests — Generate BDD scenarios', mins: 5 },
+          { num: '2', title: 'forge:build-tests — Implement API/E2E tests', mins: 8 },
+          { num: '3', title: 'forge:spec-ui-e2e — Generate Gherkin files', mins: 2 },
+          { num: '4', title: 'forge:build-playwright-tests — Build UI tests', mins: 15 },
+          { num: '5', title: 'Fix + Run — Watch tests in headed browser', mins: 5 },
+        ];
+        const outlineRows = groups.map((g, i) => `<div class="outline-item" onclick="goToStepNum(${i+1})"><div class="oi-num">${g.num}</div><div class="oi-body"><div class="oi-title">${g.title}</div><div class="oi-meta">${g.mins} min</div></div><span class="oi-arrow">›</span></div>`).join('');
+        return `<div class="welcome-slide"><div class="wl-left"><div class="wl-eyebrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>LUNCH &amp; LEARN</div><h1>Forge<br>Testing<br>Skills</h1><p>Run the full Forge testing pipeline on the Cashback Calendar. The app is pre-built — you are here to run and understand the testing skills.</p><div class="wl-meta"><div class="wl-meta-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>~40 minutes</div><div class="wl-meta-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>5 skills</div></div><button class="btn-begin" onclick="nextSlide()"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Start Tutorial</button><div class="wl-autosave">Progress saved automatically</div></div><div class="wl-right"><div class="wl-outline-label">COURSE OUTLINE</div><div class="outline-list">${outlineRows}</div></div></div>`;
+      }
 
-    slides[prev].classList.add('exit');
-    slides[prev].classList.remove('active');
+      if (s.type === 'complete') {
+        return `<div class="complete-slide"><div class="complete-emoji">🎉</div><h1>Testing Flow Complete!</h1><p>You've run all Forge testing skills end-to-end on the Cashback Calendar feature.</p><div class="stats-row"><div class="stat-box"><div class="stat-num">5</div><div class="stat-label">Skills</div></div><div class="stat-box"><div class="stat-num">26</div><div class="stat-label">Tests</div></div><div class="stat-box"><div class="stat-num">~40</div><div class="stat-label">Minutes</div></div></div><button class="btn-primary" onclick="goTo(0)" style="background:var(--pale);color:var(--dark);border:1px solid var(--border2);box-shadow:none;">↩ Start Over</button></div>`;
+      }
 
-    setTimeout(() => {
-      slides[prev].classList.remove('exit');
-      document.querySelectorAll('.dot')[prev].classList.remove('on');
-      slides[cur].classList.add('active');
-      document.querySelectorAll('.dot')[cur].classList.add('on');
-      document.getElementById('pb').disabled = cur===0;
-      document.getElementById('nb').disabled = cur===total-1;
-      document.getElementById('counter').textContent = (cur+1)+' / '+total;
-      document.getElementById('progress-bar').style.width = ((cur+1)/total*100)+'%';
-      animating = false;
-    }, 80);
-  }
+      const hasSubsteps = false;
+      return `<div class="step-slide"><div class="step-header"><div class="step-badge" style="font-size:${s.num.length>1?'.75rem':'1.05rem'}">${s.num}</div><div class="step-title"><h2>${s.title}</h2><p>${s.desc}</p></div></div>${s.content}<div style="margin-top:1.5rem;text-align:right;"><button class="btn-primary" onclick="markDone(${idx})">Mark Complete →</button></div></div>`;
+    }
 
-  function nav(d) { go(cur+d); }
+    function markDone(idx) {
+      doneSet.add(idx);
+      saveDone();
+      const sb = document.getElementById('sb-' + idx);
+      if (sb) sb.classList.add('done');
+      updateProgress();
+      showToast('Step complete!');
+      setTimeout(() => nextSlide(), 500);
+    }
 
-  document.addEventListener('keydown', e => {
-    if (e.key==='ArrowRight'||e.key==='ArrowDown') nav(1);
-    if (e.key==='ArrowLeft'||e.key==='ArrowUp') nav(-1);
-  });
+    function updateProgress() {
+      const completable = slides.filter(s => s.type === 'step').length;
+      const done = slides.filter((s, i) => s.type === 'step' && doneSet.has(i)).length;
+      const pct = completable > 0 ? Math.round((done / completable) * 100) : 0;
+      document.getElementById('progress-pct').textContent = pct + '%';
+      document.getElementById('progress-fill').style.width = pct + '%';
+    }
 
-  function cp(btn) {
-    const code = btn.closest('.cmd').querySelector('.cmd-body').textContent;
-    navigator.clipboard.writeText(code.trim()).then(() => {
-      btn.textContent = 'Copied!';
-      btn.classList.add('ok');
-      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 1800);
+    function goTo(idx) {
+      if (idx < 0 || idx >= slides.length) return;
+      document.getElementById('slide-' + current).classList.remove('active', 'welcome-active');
+      document.getElementById('sb-' + current)?.classList.remove('active');
+      current = idx;
+      const curEl = document.getElementById('slide-' + current);
+      curEl.classList.add('active');
+      if (slides[current].type === 'welcome') curEl.classList.add('welcome-active');
+      document.getElementById('sb-' + current)?.classList.add('active');
+      document.getElementById('sb-' + current)?.scrollIntoView({ block: 'nearest' });
+      document.getElementById('cur-slide').textContent = current + 1;
+      updateNav();
+      startTypingAnimations();
+    }
+
+    function goToStepNum(n) { goTo(n); }
+
+    function nextSlide() {
+      if (!doneSet.has(current) && slides[current].type !== 'welcome' && slides[current].type !== 'complete') {
+        doneSet.add(current); saveDone();
+        const li = document.getElementById('sb-' + current);
+        if (li) li.classList.add('done');
+        updateProgress();
+      }
+      if (current + 1 < slides.length) goTo(current + 1);
+    }
+
+    function prevSlide() { if (current > 0) goTo(current - 1); }
+
+    function updateNav() {
+      const isWelcome = slides[current].type === 'welcome';
+      document.getElementById('prev-btn').disabled = current === 0;
+      document.getElementById('next-btn').disabled = current === slides.length - 1;
+      document.querySelector('.header').style.display = isWelcome ? 'none' : '';
+      document.getElementById('sidebar').style.display = isWelcome ? 'none' : '';
+      document.getElementById('expand-btn').style.display = isWelcome ? 'none' : '';
+      document.querySelector('.nav-bar').style.display = isWelcome ? 'none' : '';
+    }
+
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      const eb = document.getElementById('expand-btn');
+      const c = sb.classList.toggle('collapsed');
+      eb.classList.toggle('visible', c);
+    }
+
+    function copyText(btn, text) {
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        showToast('Copied!');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    function startTypingAnimations() {
+      const slide = document.getElementById('slide-' + current);
+      if (!slide) return;
+      const els = [...slide.querySelectorAll('.typing-text[data-type-text]')].filter(el => !el.dataset.typed);
+      let delay = 200;
+      els.forEach(el => {
+        el.dataset.typed = '1';
+        const text = el.dataset.typeText;
+        el.textContent = '';
+        setTimeout(() => {
+          let i = 0;
+          function type() { if (i <= text.length) { el.textContent = text.slice(0, i++); setTimeout(type, 28); } }
+          type();
+        }, delay);
+        delay += text.length * 28 + 200;
+      });
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.target.tagName === 'INPUT') return;
+      if (e.key === 'ArrowRight') nextSlide();
+      if (e.key === 'ArrowLeft') prevSlide();
     });
-  }
 
-  buildDots();
-  document.getElementById('pb').disabled = true;
-  document.getElementById('counter').textContent = '1 / '+total;
-  document.getElementById('progress-bar').style.width = (1/total*100)+'%';
-</script>
+    (function () {
+      const resizer = document.getElementById('sidebar-resizer');
+      const sidebar = document.getElementById('sidebar');
+      let startX, startW;
+      resizer.addEventListener('mousedown', e => {
+        startX = e.clientX; startW = sidebar.offsetWidth;
+        resizer.classList.add('dragging');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+        function onMove(e) { sidebar.style.width = Math.min(480, Math.max(180, startW + (e.clientX - startX))) + 'px'; }
+        function onUp() { resizer.classList.remove('dragging'); document.body.style.cursor = ''; document.body.style.userSelect = ''; document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+    })();
+
+    build();
+  </script>
 </body>
 </html>
