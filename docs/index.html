@@ -6,64 +6,162 @@
 <title>Forge Testing Skills — Cashback Calendar</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #1a1a1a; color: #e0e0e0; height: 100vh; overflow: hidden; }
-  #progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: #4a7a8a; transition: width 0.3s ease; z-index: 100; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f0f0;
+    color: #1a1a1a;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  #progress-bar {
+    position: fixed; top: 0; left: 0; height: 2px;
+    background: #888; transition: width 0.4s cubic-bezier(.4,0,.2,1); z-index: 100;
+  }
+
+  #counter {
+    position: fixed; top: 18px; right: 24px;
+    font-size: 11px; color: #aaa; letter-spacing: 0.04em; z-index: 100;
+  }
+
+  /* Slides */
   .slides { width: 100%; height: 100vh; position: relative; }
-  .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 56px 80px; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; }
-  .slide.active { opacity: 1; pointer-events: all; }
-  #counter { position: fixed; top: 20px; right: 24px; font-size: 12px; color: #555; z-index: 100; }
-  .card { background: #232323; border: 1px solid #2e2e2e; border-radius: 14px; padding: 40px 48px; max-width: 840px; width: 100%; max-height: 86vh; overflow-y: auto; }
-  .card::-webkit-scrollbar { width: 3px; } .card::-webkit-scrollbar-thumb { background: #383838; border-radius: 2px; }
-  .badge { display: inline-flex; align-items: center; gap: 7px; border-radius: 20px; padding: 4px 13px; font-size: 10.5px; letter-spacing: 0.09em; text-transform: uppercase; margin-bottom: 18px; border: 1px solid transparent; }
-  .badge.intro { background: #1e2530; border-color: #2a3a50; color: #6090b0; }
-  .badge.prereq { background: #261e14; border-color: #3a2a14; color: #a07840; }
-  .badge.step { background: #1a2020; border-color: #283030; color: #508090; }
-  .badge.action { background: #1a2218; border-color: #283228; color: #60a070; }
-  .badge.warn { background: #201a1a; border-color: #302020; color: #906050; }
-  .badge .num { background: rgba(255,255,255,0.06); border-radius: 10px; padding: 1px 7px; font-size: 10px; }
-  h1 { font-size: 26px; font-weight: 600; color: #f0f0f0; margin-bottom: 8px; line-height: 1.3; }
-  .sub { font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.65; }
-  .cmd { background: #181818; border: 1px solid #2a2a2a; border-radius: 9px; overflow: hidden; margin: 11px 0; }
-  .cmd-top { display: flex; align-items: center; justify-content: space-between; padding: 7px 14px; background: #1e1e1e; border-bottom: 1px solid #272727; }
-  .cmd-lbl { font-size: 10px; color: #505050; letter-spacing: 0.1em; text-transform: uppercase; }
-  .copy { background: none; border: 1px solid #323232; border-radius: 5px; color: #585858; font-size: 11px; padding: 3px 10px; cursor: pointer; transition: all 0.15s; }
-  .copy:hover { background: #282828; color: #999; border-color: #484848; }
-  .copy.ok { color: #60a070; border-color: #406050; }
-  .cmd-body { padding: 13px 15px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12.5px; color: #bcc8d4; line-height: 1.65; white-space: pre; overflow-x: auto; }
-  .ans { background: #1b211b; border: 1px solid #283228; border-radius: 9px; padding: 12px 15px; margin: 10px 0; }
-  .ans-lbl { font-size: 10px; color: #3d6a45; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 9px; }
-  .ans-row { display: flex; gap: 9px; margin-bottom: 5px; font-size: 12.5px; color: #8aaa90; align-items: flex-start; }
+  .slide {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100vh;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    padding: 56px 80px;
+    opacity: 0; pointer-events: none;
+    transform: translateY(18px);
+    transition: opacity 0.45s cubic-bezier(.4,0,.2,1), transform 0.45s cubic-bezier(.4,0,.2,1);
+  }
+  .slide.active { opacity: 1; pointer-events: all; transform: translateY(0); }
+  .slide.exit { opacity: 0; transform: translateY(-18px); }
+
+  /* Card */
+  .card {
+    background: #fff;
+    border: 1px solid #e4e4e4;
+    border-radius: 16px;
+    padding: 40px 48px;
+    max-width: 820px; width: 100%;
+    max-height: 86vh; overflow-y: auto;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  }
+  .card::-webkit-scrollbar { width: 3px; }
+  .card::-webkit-scrollbar-thumb { background: #d8d8d8; border-radius: 2px; }
+
+  /* Badge */
+  .badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    border-radius: 20px; padding: 4px 13px;
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 16px; border: 1px solid #e0e0e0;
+    background: #f5f5f5; color: #888;
+    font-weight: 500;
+  }
+  .badge .num {
+    background: #ececec; border-radius: 10px;
+    padding: 1px 7px; font-size: 10px; color: #666;
+  }
+  .badge.step { border-color: #d8d8d8; color: #555; }
+  .badge.action { border-color: #c8dcc8; background: #f2f7f2; color: #4a7a4a; }
+  .badge.warn { border-color: #ddd0c0; background: #faf5ee; color: #8a6a30; }
+
+  h1 { font-size: 24px; font-weight: 600; color: #111; margin-bottom: 6px; line-height: 1.3; }
+  .sub { font-size: 13px; color: #888; margin-bottom: 20px; line-height: 1.7; }
+
+  /* Command block */
+  .cmd {
+    background: #1c1c1c; border-radius: 10px;
+    overflow: hidden; margin: 10px 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  }
+  .cmd-top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 14px; background: #242424; border-bottom: 1px solid #2e2e2e;
+  }
+  .cmd-lbl { font-size: 10px; color: #585858; letter-spacing: 0.1em; text-transform: uppercase; }
+  .copy {
+    background: none; border: 1px solid #3a3a3a; border-radius: 5px;
+    color: #666; font-size: 11px; padding: 3px 10px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .copy:hover { background: #333; color: #ccc; border-color: #555; }
+  .copy.ok { color: #6a9a6a; border-color: #4a7a4a; }
+  .cmd-body {
+    padding: 14px 16px;
+    font-family: 'SF Mono', 'Fira Code', 'Menlo', monospace;
+    font-size: 12.5px; color: #d4dae4; line-height: 1.7;
+    white-space: pre; overflow-x: auto;
+  }
+
+  /* Answer */
+  .ans {
+    background: #f7faf7; border: 1px solid #d8ead8;
+    border-radius: 9px; padding: 12px 15px; margin: 10px 0;
+  }
+  .ans-lbl { font-size: 10px; color: #4a7a4a; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+  .ans-row { display: flex; gap: 9px; margin-bottom: 5px; font-size: 13px; color: #3a5a3a; align-items: flex-start; }
   .ans-row:last-child { margin-bottom: 0; }
-  .arr { color: #3d6a45; flex-shrink: 0; margin-top: 2px; font-size: 10px; }
-  .box { border-radius: 8px; padding: 11px 14px; margin: 11px 0; font-size: 12.5px; line-height: 1.65; }
-  .box.info { background: #181d22; border: 1px solid #1e2e3a; border-left: 3px solid #3a6080; color: #6a90aa; }
-  .box.warn { background: #1e1810; border: 1px solid #32220e; border-left: 3px solid #805030; color: #a07050; }
-  .box.good { background: #171d15; border: 1px solid #203018; border-left: 3px solid #407050; color: #60946e; }
-  .box.tip  { background: #1a1820; border: 1px solid #282030; border-left: 3px solid #604898; color: #8870b8; }
+  .arr { color: #4a7a4a; flex-shrink: 0; margin-top: 2px; font-size: 10px; }
+
+  /* Info boxes */
+  .box { border-radius: 8px; padding: 11px 14px; margin: 10px 0; font-size: 12.5px; line-height: 1.7; }
+  .box.info { background: #f4f7fb; border: 1px solid #d0dcea; border-left: 3px solid #7090b8; color: #4a6a8a; }
+  .box.warn { background: #fdf8f0; border: 1px solid #e8d8b8; border-left: 3px solid #b8904a; color: #7a5a28; }
+  .box.good { background: #f4faf4; border: 1px solid #c8e4c8; border-left: 3px solid #5a9a5a; color: #3a6a3a; }
+  .box.tip  { background: #f8f4fc; border: 1px solid #dcccea; border-left: 3px solid #9070b8; color: #604888; }
+  .box.note { background: #f8f8f8; border: 1px solid #e0e0e0; border-left: 3px solid #aaa; color: #555; }
+
+  /* List */
   ul.l { list-style: none; margin: 6px 0; }
-  ul.l li { display: flex; gap: 9px; padding: 4px 0; font-size: 12.5px; color: #909090; line-height: 1.5; }
-  ul.l li::before { content: "—"; color: #383838; flex-shrink: 0; }
+  ul.l li { display: flex; gap: 9px; padding: 5px 0; font-size: 13px; color: #555; line-height: 1.6; border-bottom: 1px solid #f0f0f0; }
+  ul.l li:last-child { border-bottom: none; }
+  ul.l li::before { content: "—"; color: #ccc; flex-shrink: 0; }
+
+  /* Two col */
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-  .col { background: #1d1d1d; border: 1px solid #2a2a2a; border-radius: 8px; padding: 14px; }
-  .col-t { font-size: 10px; color: #484848; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 7px; }
-  .col-b { font-size: 12.5px; color: #7a7a7a; line-height: 1.6; }
-  nav { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; align-items: center; z-index: 100; }
-  .nb { background: #242424; border: 1px solid #333; border-radius: 8px; color: #7a7a7a; font-size: 13px; padding: 7px 18px; cursor: pointer; transition: all 0.15s; }
-  .nb:hover { background: #2c2c2c; color: #bbb; border-color: #484848; }
-  .nb:disabled { opacity: 0.25; cursor: not-allowed; }
-  .dots { display: flex; gap: 5px; align-items: center; padding: 0 6px; }
-  .dot { width: 5px; height: 5px; border-radius: 50%; background: #333; cursor: pointer; transition: all 0.2s; }
-  .dot.on { background: #585858; width: 14px; border-radius: 3px; }
-  .kbd { position: fixed; bottom: 26px; right: 24px; font-size: 11px; color: #333; }
+  .col { background: #f8f8f8; border: 1px solid #e8e8e8; border-radius: 8px; padding: 14px; }
+  .col-t { font-size: 10px; color: #aaa; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 7px; }
+  .col-b { font-size: 12.5px; color: #666; line-height: 1.6; }
+
+  /* Flow indicator */
+  .flow { display: flex; align-items: center; gap: 5px; margin-bottom: 18px; flex-wrap: wrap; }
+  .flow-step {
+    background: #f0f0f0; border: 1px solid #e0e0e0;
+    border-radius: 5px; padding: 3px 10px;
+    font-size: 11px; color: #aaa;
+    transition: all 0.2s;
+  }
+  .flow-step.on { background: #1c1c1c; border-color: #1c1c1c; color: #fff; }
+  .flow-arrow { color: #ccc; font-size: 10px; }
+
+  hr.d { border: none; border-top: 1px solid #ececec; margin: 18px 0; }
+
+  /* Title slide */
   .tc { text-align: center; }
-  .tc h1 { font-size: 30px; }
-  .tags { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 22px; }
-  .tag { background: #222; border: 1px solid #2e2e2e; border-radius: 5px; padding: 4px 12px; font-size: 11px; color: #585858; }
-  hr.d { border: none; border-top: 1px solid #2a2a2a; margin: 16px 0; }
-  .flow { display: flex; align-items: center; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
-  .flow-step { background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 5px; padding: 3px 10px; font-size: 11px; color: #505050; }
-  .flow-step.on { background: #1a2520; border-color: #304030; color: #608060; }
-  .flow-arrow { color: #383838; font-size: 11px; }
+  .tc h1 { font-size: 28px; }
+  .tags { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
+  .tag { background: #f0f0f0; border: 1px solid #e0e0e0; border-radius: 5px; padding: 4px 12px; font-size: 11px; color: #888; }
+
+  /* Nav */
+  nav {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 10px; align-items: center; z-index: 100;
+  }
+  .nb {
+    background: #fff; border: 1px solid #e0e0e0;
+    border-radius: 8px; color: #888; font-size: 13px;
+    padding: 7px 20px; cursor: pointer;
+    transition: all 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .nb:hover { background: #f4f4f4; color: #333; border-color: #ccc; }
+  .nb:disabled { opacity: 0.3; cursor: not-allowed; }
+  .dots { display: flex; gap: 5px; align-items: center; padding: 0 6px; }
+  .dot { width: 5px; height: 5px; border-radius: 50%; background: #ddd; cursor: pointer; transition: all 0.25s; }
+  .dot.on { background: #888; width: 16px; border-radius: 3px; }
+  .kbd { position: fixed; bottom: 28px; right: 24px; font-size: 11px; color: #ccc; }
 </style>
 </head>
 <body>
@@ -74,18 +172,18 @@
 <!-- TITLE -->
 <div class="slide active">
   <div class="card tc">
-    <div class="badge intro" style="margin:0 auto 22px;">Forge Testing Skills</div>
-    <h1>Cashback Calendar<br><span style="font-weight:400;color:#555;font-size:20px;">Try the testing pipeline yourself</span></h1>
-    <p style="max-width:500px;margin:16px auto 0;color:#5a5a5a;font-size:14px;line-height:1.8;">The app is already built. Clone it, start it, and run the testing skills in order. Each slide has the exact command and what to expect.</p>
+    <div class="badge" style="margin: 0 auto 20px;">Forge Testing Skills</div>
+    <h1>Cashback Calendar<br><span style="font-weight:400;color:#aaa;font-size:19px;">Run the testing pipeline yourself</span></h1>
+    <p style="max-width:480px;margin:14px auto 0;color:#aaa;font-size:13.5px;line-height:1.85;">The app is pre-built. Clone it, start it, and follow the steps. Each slide has the exact command and what to expect.</p>
     <div class="tags">
       <span class="tag">forge:spec-tests</span>
       <span class="tag">forge:build-tests</span>
       <span class="tag">forge:spec-ui-e2e</span>
       <span class="tag">forge:build-playwright-tests</span>
     </div>
-    <div class="box info" style="margin-top:28px;text-align:left;">
-      <strong style="color:#5a88a8;">PRD:</strong> <a href="https://rakutenrewards.atlassian.net/wiki/x/LYCeYQo" style="color:#5a88a8;">Cashback Calendar — Confluence</a><br>
-      <strong style="color:#5a88a8;">Repo:</strong> <a href="https://github.com/rr-sairohith-vennu/rakcal" style="color:#5a88a8;">github.com/rr-sairohith-vennu/rakcal</a> — branch: <code style="color:#8ab0d0">workshop-start</code>
+    <div class="box info" style="margin-top:24px;text-align:left;max-width:480px;margin-left:auto;margin-right:auto;">
+      <strong>PRD:</strong> <a href="https://rakutenrewards.atlassian.net/wiki/x/LYCeYQo" style="color:#5a80a8;">Cashback Calendar — Confluence</a><br>
+      <strong>Repo:</strong> <a href="https://github.com/rr-sairohith-vennu/rakcal" style="color:#5a80a8;">github.com/rr-sairohith-vennu/rakcal</a> — branch: <code style="color:#5a80a8;">workshop-start</code>
     </div>
   </div>
 </div>
@@ -93,31 +191,39 @@
 <!-- SETUP -->
 <div class="slide">
   <div class="card">
-    <div class="badge prereq"><span class="num">Setup</span> Do this first</div>
+    <div class="badge step"><span class="num">Setup</span> Do this first</div>
     <h1>Get the App Running</h1>
-    <p class="sub">The app is pre-built with seeded cashback events. Clone it, install, and start the dev server.</p>
+    <p class="sub">Clone the repo, init the database, seed demo data, and start the server. Then open the folder in Claude Code.</p>
 
     <div class="cmd">
-      <div class="cmd-top"><span class="cmd-lbl">Terminal</span><button class="copy" onclick="cp(this)">Copy</button></div>
+      <div class="cmd-top"><span class="cmd-lbl">Terminal — step 1: clone and install</span><button class="copy" onclick="cp(this)">Copy</button></div>
       <div class="cmd-body">git clone https://github.com/rr-sairohith-vennu/rakcal
 cd rakcal
 git checkout workshop-start
-npm install
-npm run dev</div>
+npm install</div>
     </div>
-    <div class="box good">Open <strong>http://localhost:3000</strong> — you should see the Cashback Calendar with events.</div>
+
+    <div class="cmd">
+      <div class="cmd-top"><span class="cmd-lbl">Terminal — step 2: init DB and seed data</span><button class="copy" onclick="cp(this)">Copy</button></div>
+      <div class="cmd-body">npx prisma db push
+npx ts-node --compiler-options '{"module":"CommonJS"}' prisma/seed.ts</div>
+    </div>
+
+    <div class="cmd">
+      <div class="cmd-top"><span class="cmd-lbl">Terminal — step 3: start the app (keep running)</span><button class="copy" onclick="cp(this)">Copy</button></div>
+      <div class="cmd-body">npm run dev</div>
+    </div>
+
+    <div class="box good">Open <strong>http://localhost:3000</strong> — you should see the Cashback Calendar with events on the grid.</div>
 
     <hr class="d">
 
-    <p style="font-size:13px;color:#666;margin-bottom:6px;">Install Playwright MCP — needed for forge:build-playwright-tests:</p>
+    <p style="font-size:13px;color:#888;margin-bottom:8px;">Install Playwright MCP (needed for Step 4):</p>
     <div class="cmd">
       <div class="cmd-top"><span class="cmd-lbl">Terminal</span><button class="copy" onclick="cp(this)">Copy</button></div>
       <div class="cmd-body">claude mcp add playwright -- npx @playwright/mcp@latest</div>
     </div>
-    <div class="box warn"><strong>Restart Claude Code after running this.</strong> Then open the rakcal folder in Claude Code and continue.</div>
-
-    <hr class="d">
-    <p style="font-size:12px;color:#555;">When Claude Code asks for permission to run a bash command — answer <strong style="color:#888">Yes (and don't ask again)</strong>.</p>
+    <div class="box warn"><strong>Restart Claude Code after this.</strong> Then open the rakcal folder in Claude Code and continue from here.</div>
   </div>
 </div>
 
@@ -126,7 +232,7 @@ npm run dev</div>
   <div class="card">
     <div class="badge step"><span class="num">Step 0.5</span> Gap Analysis</div>
     <h1>Read the Gap Report</h1>
-    <p class="sub">Before writing any tests, understand what's missing. A validation report was pre-generated when the app was built.</p>
+    <p class="sub">A validation report was pre-generated when the app was built. Read it before running anything — it shows exactly what test coverage is missing.</p>
 
     <div class="flow">
       <span class="flow-step on">0.5 Gap</span>
@@ -142,16 +248,14 @@ npm run dev</div>
       <div class="cmd-body">Read .forge/efforts/cashback-calendar/validation/report.md and summarise what test coverage is missing.</div>
     </div>
 
-    <div class="box tip">Report path: <code style="color:#a090cc">.forge/efforts/cashback-calendar/validation/report.md</code></div>
-
-    <div class="two" style="margin-top:4px;">
+    <div class="two">
       <div class="col">
         <div class="col-t">What to look for</div>
-        <div class="col-b">Which BRs have no test scenario<br>Which API endpoints are untested<br>Which UI states have no spec</div>
+        <div class="col-b">Which BRs have no test<br>Which API endpoints are untested<br>Which UI states have no spec</div>
       </div>
       <div class="col">
         <div class="col-t">Why it matters</div>
-        <div class="col-b">forge:spec-tests uses these gaps to generate scenarios. Reading the report helps you judge whether the output is complete.</div>
+        <div class="col-b">forge:spec-tests uses these gaps to decide what scenarios to generate. Reading first helps you judge the output.</div>
       </div>
     </div>
   </div>
@@ -161,8 +265,8 @@ npm run dev</div>
 <div class="slide">
   <div class="card">
     <div class="badge step"><span class="num">Step 1</span> forge:spec-tests — ~5 min</div>
-    <h1>Generate BDD Test Scenarios</h1>
-    <p class="sub">Reads requirements and generates numbered BDD scenarios. No test code yet — this is the specification layer.</p>
+    <h1>Generate BDD Scenarios</h1>
+    <p class="sub">Reads the requirements and generates numbered BDD scenarios. No test code yet — this is the specification layer.</p>
 
     <div class="flow">
       <span class="flow-step">0.5 Gap</span>
@@ -179,12 +283,13 @@ npm run dev</div>
     </div>
 
     <div class="box info">
-      Generates two files under <code style="color:#6a9fd8">.forge/efforts/cashback-calendar/spec/test/</code><br>
-      <strong style="color:#8ab0d0">e2e-test-suite.md</strong> — system/API scenarios (SC-1 through SC-13)<br>
-      <strong style="color:#8ab0d0">ui-e2e-test-suite.md</strong> — UI browser scenarios (SC-1 through SC-13)
+      Output → <code>.forge/efforts/cashback-calendar/spec/test/</code><br>
+      <strong>e2e-test-suite.md</strong> — system/API scenarios<br>
+      <strong>ui-e2e-test-suite.md</strong> — UI browser scenarios<br>
+      Open these files and read through the scenarios while the next steps run.
     </div>
 
-    <div class="box warn"><strong>When it finishes — ignore the "Next steps" suggestion.</strong> forge:spec-tests will suggest running forge:spec-ui-e2e directly. Skip that and follow this guide's order. Step 2 is forge:build-tests.</div>
+    <div class="box warn">When it finishes, it suggests running <code>forge:spec-ui-e2e</code> next. <strong>Ignore that.</strong> Follow this guide — Step 2 is <code>forge:build-tests</code>.</div>
   </div>
 </div>
 
@@ -192,8 +297,8 @@ npm run dev</div>
 <div class="slide">
   <div class="card">
     <div class="badge step"><span class="num">Step 2</span> forge:build-tests — ~8 min</div>
-    <h1>Build API / E2E Test Code</h1>
-    <p class="sub">Reads the BDD scenarios and implements the ones testable via HTTP (API routes + page rendering). Browser scenarios are handled in Step 4.</p>
+    <h1>Build API &amp; E2E Tests</h1>
+    <p class="sub">Implements the HTTP-testable scenarios as axios tests hitting localhost:3000. Browser interaction scenarios are handled in Step 4.</p>
 
     <div class="flow">
       <span class="flow-step">0.5 Gap</span>
@@ -209,9 +314,9 @@ npm run dev</div>
       <div class="cmd-body">/forge:build-tests --type e2e-test</div>
     </div>
 
-    <div class="box info">
-      When it asks what to implement — choose <strong style="color:#8ab0d0">Option 1</strong> (axios HTTP tests for API routes and HTTP-testable page scenarios).<br><br>
-      Output: <code style="color:#6a9fd8">tests/system/e2e/api/</code> — axios tests hitting <strong>localhost:3000</strong>
+    <div class="ans">
+      <div class="ans-lbl">When it asks what to implement</div>
+      <div class="ans-row"><span class="arr">›</span> Choose <strong>Option 1</strong> — axios HTTP tests for API routes + HTTP-testable page scenarios</div>
     </div>
 
     <div class="two" style="margin-top:8px;">
@@ -221,9 +326,11 @@ npm run dev</div>
       </div>
       <div class="col">
         <div class="col-t">What it skips</div>
-        <div class="col-b">Browser click interactions, modal open/close, keyboard events — those require Playwright (Step 4).</div>
+        <div class="col-b">Browser clicks, modal open/close, keyboard events — those need Playwright (Step 4).</div>
       </div>
     </div>
+
+    <div class="box note" style="margin-top:10px;"><strong>Note:</strong> At the end it says "run with npm run test:e2e" — that's just a reminder for manual use. The skill already ran the tests. You don't need to run anything.</div>
   </div>
 </div>
 
@@ -232,7 +339,7 @@ npm run dev</div>
   <div class="card">
     <div class="badge step"><span class="num">Step 3</span> forge:spec-ui-e2e — ~2 min</div>
     <h1>Generate Gherkin Feature Files</h1>
-    <p class="sub">Converts ui-e2e-test-suite.md into Gherkin .feature files — the input format forge:build-playwright-tests reads to generate Playwright specs.</p>
+    <p class="sub">Converts ui-e2e-test-suite.md into Gherkin .feature files — the format forge:build-playwright-tests reads to write Playwright specs.</p>
 
     <div class="flow">
       <span class="flow-step">1 spec-tests</span>
@@ -249,16 +356,16 @@ npm run dev</div>
 
     <div class="ans">
       <div class="ans-lbl">Answer the prompts</div>
-      <div class="ans-row"><span class="arr">›</span> Region → <strong style="color:#c8d0da">us</strong></div>
-      <div class="ans-row"><span class="arr">›</span> Feature area → <strong style="color:#c8d0da">cashback-calendar</strong></div>
+      <div class="ans-row"><span class="arr">›</span> Region → <strong>us</strong></div>
+      <div class="ans-row"><span class="arr">›</span> Feature area → <strong>cashback-calendar</strong></div>
     </div>
 
     <div class="box good">
-      Output: <code style="color:#60a070">features/us/cashback-calendar/</code><br>
-      One .feature file per surface — calendar-view.feature, event-detail.feature, filters.feature
+      Output → <code>features/us/cashback-calendar/</code><br>
+      One .feature file per surface: calendar-view.feature, event-detail.feature, filters.feature
     </div>
 
-    <div class="box info">Open any .feature file — each scenario is Given / When / Then. This is exactly what forge:build-playwright-tests turns into Playwright code.</div>
+    <div class="box info">Open any .feature file — each scenario is Given / When / Then. This is exactly what forge:build-playwright-tests converts to Playwright code.</div>
   </div>
 </div>
 
@@ -267,7 +374,7 @@ npm run dev</div>
   <div class="card">
     <div class="badge step"><span class="num">Step 4</span> forge:build-playwright-tests — ~15 min</div>
     <h1>Build Playwright UI Tests</h1>
-    <p class="sub">Opens a real browser, discovers DOM selectors from the live app, writes .spec.ts files for each .feature file, runs them, and fixes failures.</p>
+    <p class="sub">Opens a real browser, discovers DOM selectors from the live app, writes .spec.ts files, runs them, and fixes failures automatically.</p>
 
     <div class="flow">
       <span class="flow-step">2 build-tests</span>
@@ -281,14 +388,11 @@ npm run dev</div>
       <div class="cmd-body">/forge:build-playwright-tests us</div>
     </div>
 
-    <div class="box warn"><strong>First run only:</strong> Playwright MCP installs and asks you to restart Claude Code. After restarting, run the same command again — it continues from where it stopped.</div>
+    <div class="box warn"><strong>First run only:</strong> If Playwright MCP wasn't installed yet, it installs now and asks you to restart Claude Code. After restarting, run the same command again.</div>
 
-    <div class="box tip">Watch the browser open and interact with the calendar automatically — navigating months, clicking days, opening modals. This is the live DOM discovery phase.</div>
+    <div class="box tip">Watch the browser open and interact with the calendar automatically — navigating months, clicking event days, opening the detail modal. This is the live DOM discovery phase where it finds real selectors.</div>
 
-    <div class="box info">
-      Output: <code style="color:#6a9fd8">tests/bdd/cashback-calendar/</code><br>
-      One .spec.ts per .feature file. Runs headless, fixes up to 3 cycles, then runs validate.js.
-    </div>
+    <div class="box info">Output → <code>tests/bdd/cashback-calendar/</code> — one .spec.ts per .feature file. Runs headless, fixes up to 3 cycles, then runs validate.js.</div>
   </div>
 </div>
 
@@ -296,8 +400,8 @@ npm run dev</div>
 <div class="slide">
   <div class="card">
     <div class="badge action"><span class="num">Step 5</span> Fix + Run</div>
-    <h1>Fix Failures &amp; Run in Headed Mode</h1>
-    <p class="sub">Fix any remaining failures, then run with a visible browser so you can see every scenario play out.</p>
+    <h1>Fix Failures &amp; Run Headed</h1>
+    <p class="sub">If any tests are still failing, fix them. Then run with a visible browser so you can watch every scenario execute.</p>
 
     <div class="flow">
       <span class="flow-step">3 spec-ui-e2e</span>
@@ -305,19 +409,19 @@ npm run dev</div>
       <span class="flow-arrow">→</span><span class="flow-step on">5 fix + run</span>
     </div>
 
-    <p style="font-size:13px;color:#666;margin-bottom:4px;">If any tests are still failing:</p>
+    <p style="font-size:13px;color:#888;margin-bottom:6px;">If tests are still failing after Step 4:</p>
     <div class="cmd">
-      <div class="cmd-top"><span class="cmd-lbl">Fix failures</span><button class="copy" onclick="cp(this)">Copy</button></div>
+      <div class="cmd-top"><span class="cmd-lbl">Fix</span><button class="copy" onclick="cp(this)">Copy</button></div>
       <div class="cmd-body">/forge:build-playwright-tests us --fix</div>
     </div>
 
-    <p style="font-size:13px;color:#666;margin-bottom:4px;margin-top:10px;">Run all tests in headed slow mode:</p>
+    <p style="font-size:13px;color:#888;margin-bottom:6px;margin-top:10px;">Run all tests headed with slow motion:</p>
     <div class="cmd">
       <div class="cmd-top"><span class="cmd-lbl">Terminal</span><button class="copy" onclick="cp(this)">Copy</button></div>
       <div class="cmd-body">npx playwright test tests/bdd/cashback-calendar/ --project=local-anonymous --headed --slow-mo=800</div>
     </div>
 
-    <div class="box good">Watch the browser: navigate months → click an event day → see merchant details → apply a filter. Each action maps to a BDD scenario from the feature files.</div>
+    <div class="box good">Watch the browser navigate months, click event days, open merchant details, apply filters — all driven by the BDD scenarios you generated in Step 1.</div>
   </div>
 </div>
 
@@ -328,14 +432,15 @@ npm run dev</div>
     <h1>Common Problems</h1>
 
     <ul class="l">
-      <li><strong style="color:#ddd">App not loading at localhost:3000</strong> — <code>npm run dev</code> must be running in a separate terminal. Keep it open the entire time.</li>
-      <li><strong style="color:#ddd">Playwright MCP not found</strong> — Run <code>claude mcp add playwright -- npx @playwright/mcp@latest</code> then restart Claude Code.</li>
-      <li><strong style="color:#ddd">Permission prompts keep appearing</strong> — Choose "Yes (and don't ask again for this command)" each time.</li>
-      <li><strong style="color:#ddd">forge:build-tests asks which scenarios to implement</strong> — Choose Option 1 (axios/HTTP tests). Browser scenarios go to forge:build-playwright-tests.</li>
-      <li><strong style="color:#ddd">Tests fail after 3 fix cycles</strong> — Stop. Read the last error. Usually a selector changed or the server isn't running. Fix the root cause before re-running.</li>
-      <li><strong style="color:#ddd">forge:spec-ui-e2e asks for region</strong> — Answer <code>us</code>, feature area <code>cashback-calendar</code>.</li>
-      <li><strong style="color:#ddd">Context window filling up</strong> — Run <code>/compact</code> in Claude Code, then resume the skill.</li>
-      <li><strong style="color:#ddd">Gap report path not found</strong> — Correct path: <code>.forge/efforts/cashback-calendar/validation/report.md</code></li>
+      <li><strong>API returns HTML instead of JSON</strong> — DB not seeded. Run <code>npx prisma db push && npx ts-node --compiler-options '{"module":"CommonJS"}' prisma/seed.ts</code></li>
+      <li><strong>App not loading at localhost:3000</strong> — <code>npm run dev</code> must be running in a separate terminal. Keep it open the entire time.</li>
+      <li><strong>Playwright MCP not found</strong> — Run <code>claude mcp add playwright -- npx @playwright/mcp@latest</code> then restart Claude Code.</li>
+      <li><strong>Permission prompts keep appearing</strong> — Choose "Yes (and don't ask again for this command)" each time.</li>
+      <li><strong>forge:build-tests asks which option</strong> — Choose Option 1 (axios/HTTP). Browser scenarios go to forge:build-playwright-tests in Step 4.</li>
+      <li><strong>"Run with npm run test:e2e" message</strong> — Informational only. The skill already ran the tests. You don't need to do anything.</li>
+      <li><strong>Tests fail after 3 cycles</strong> — Read the last error carefully before re-running. Usually a selector changed or the server isn't running.</li>
+      <li><strong>forge:spec-ui-e2e asks for region</strong> — Answer <code>us</code>, feature area <code>cashback-calendar</code>.</li>
+      <li><strong>Context window filling up</strong> — Run <code>/compact</code> in Claude Code, then resume the skill.</li>
     </ul>
   </div>
 </div>
@@ -343,46 +448,42 @@ npm run dev</div>
 <!-- CHEAT SHEET -->
 <div class="slide">
   <div class="card">
-    <div class="badge step"><span class="num">Ref</span> All commands</div>
-    <h1>Complete Flow — Copy &amp; Run</h1>
+    <div class="badge"><span class="num">Ref</span> All commands</div>
+    <h1>Complete Flow</h1>
     <div class="cmd">
       <div class="cmd-top"><span class="cmd-lbl">Everything in order</span><button class="copy" onclick="cp(this)">Copy</button></div>
-      <div class="cmd-body"># ── Setup ─────────────────────────────────────────────────────
+      <div class="cmd-body"># ── Setup ────────────────────────────────────────────────────
 git clone https://github.com/rr-sairohith-vennu/rakcal
 cd rakcal
 git checkout workshop-start
 npm install
-npm run dev   # keep running in separate terminal
+npx prisma db push
+npx ts-node --compiler-options '{"module":"CommonJS"}' prisma/seed.ts
+npm run dev          # keep running in a separate terminal
 
-# Install Playwright MCP (once, then restart Claude Code)
+# Install Playwright MCP (once — restart Claude Code after)
 claude mcp add playwright -- npx @playwright/mcp@latest
 
-# ── Open rakcal in Claude Code, then run ───────────────────────
+# ── Open rakcal in Claude Code, then run ──────────────────────
 
 # Step 0.5 — read gap report
 # Ask Claude: "Read .forge/efforts/cashback-calendar/validation/report.md and summarise gaps"
 
 # Step 1 — generate BDD scenarios (~5 min)
 /forge:spec-tests --type e2e
-# Output: .forge/efforts/cashback-calendar/spec/test/e2e-test-suite.md
-#         .forge/efforts/cashback-calendar/spec/test/ui-e2e-test-suite.md
 
-# Step 2 — implement API/E2E tests (~8 min)
+# Step 2 — build API/E2E tests (~8 min)  →  choose Option 1
 /forge:build-tests --type e2e-test
-# Choose Option 1 when asked
-# Output: tests/system/e2e/api/
 
 # Step 3 — generate Gherkin feature files (~2 min)
 /forge:spec-ui-e2e
-# Prompts: region = us, feature area = cashback-calendar
-# Output: features/us/cashback-calendar/*.feature
+# prompts: region = us, feature area = cashback-calendar
 
 # Step 4 — build Playwright specs (~15 min)
 /forge:build-playwright-tests us
-# Output: tests/bdd/cashback-calendar/*.spec.ts
 
 # Step 5 — fix if needed, then run headed
-/forge:build-playwright-tests us --fix   # if tests failing
+/forge:build-playwright-tests us --fix
 npx playwright test tests/bdd/cashback-calendar/ --project=local-anonymous --headed --slow-mo=800</div>
     </div>
   </div>
@@ -401,6 +502,8 @@ npx playwright test tests/bdd/cashback-calendar/ --project=local-anonymous --hea
   const slides = document.querySelectorAll('.slide');
   const total = slides.length;
   let cur = 0;
+  let animating = false;
+
   function buildDots() {
     const c = document.getElementById('dots');
     for (let i = 0; i < total; i++) {
@@ -410,22 +513,36 @@ npx playwright test tests/bdd/cashback-calendar/ --project=local-anonymous --hea
       c.appendChild(d);
     }
   }
+
   function go(n) {
-    slides[cur].classList.remove('active');
-    document.querySelectorAll('.dot')[cur].classList.remove('on');
+    if (animating || n === cur) return;
+    animating = true;
+    const prev = cur;
     cur = Math.max(0, Math.min(n, total-1));
-    slides[cur].classList.add('active');
-    document.querySelectorAll('.dot')[cur].classList.add('on');
-    document.getElementById('pb').disabled = cur===0;
-    document.getElementById('nb').disabled = cur===total-1;
-    document.getElementById('counter').textContent = (cur+1)+' / '+total;
-    document.getElementById('progress-bar').style.width = ((cur+1)/total*100)+'%';
+
+    slides[prev].classList.add('exit');
+    slides[prev].classList.remove('active');
+
+    setTimeout(() => {
+      slides[prev].classList.remove('exit');
+      document.querySelectorAll('.dot')[prev].classList.remove('on');
+      slides[cur].classList.add('active');
+      document.querySelectorAll('.dot')[cur].classList.add('on');
+      document.getElementById('pb').disabled = cur===0;
+      document.getElementById('nb').disabled = cur===total-1;
+      document.getElementById('counter').textContent = (cur+1)+' / '+total;
+      document.getElementById('progress-bar').style.width = ((cur+1)/total*100)+'%';
+      animating = false;
+    }, 80);
   }
+
   function nav(d) { go(cur+d); }
+
   document.addEventListener('keydown', e => {
     if (e.key==='ArrowRight'||e.key==='ArrowDown') nav(1);
     if (e.key==='ArrowLeft'||e.key==='ArrowUp') nav(-1);
   });
+
   function cp(btn) {
     const code = btn.closest('.cmd').querySelector('.cmd-body').textContent;
     navigator.clipboard.writeText(code.trim()).then(() => {
@@ -434,8 +551,11 @@ npx playwright test tests/bdd/cashback-calendar/ --project=local-anonymous --hea
       setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 1800);
     });
   }
+
   buildDots();
-  go(0);
+  document.getElementById('pb').disabled = true;
+  document.getElementById('counter').textContent = '1 / '+total;
+  document.getElementById('progress-bar').style.width = (1/total*100)+'%';
 </script>
 </body>
 </html>
