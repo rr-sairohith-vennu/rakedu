@@ -207,7 +207,13 @@
         title: 'Setup', desc: 'Clone, start the app, open in Claude Code',
         content: `
           <div class="info-box"><strong>The app is already built.</strong> You are running the <strong>testing skills only</strong> — no implementation needed.</div>
-          <p style="font-size:.9rem;color:var(--muted);margin:.9rem 0 .5rem;font-weight:600;">Step 1 — Clone and start the app:</p>
+
+          <p style="font-size:.9rem;color:var(--muted);margin:.9rem 0 .5rem;font-weight:600;">Step 1 — Install the Forge plugin in Claude Code:</p>
+          <p style="font-size:.84rem;color:var(--muted);margin-bottom:.5rem;">Open Claude Code, go to <strong>Extensions → Marketplace</strong>, search for <strong>forge</strong>, and install it. This makes forge:spec-tests and other forge: commands available.</p>
+          <div class="success-box" style="border-left-color:#ef4444;background:#fef2f2;"><strong>⚠️ Do this before cloning anything.</strong> If you skip this, forge:spec-tests will show "Unknown command" and nothing will work.</div>
+
+          <hr class="div">
+          <p style="font-size:.9rem;color:var(--muted);margin-bottom:.5rem;font-weight:600;">Step 2 — Clone and start the app (Terminal 1):</p>
           <div class="cmd-block">
             <pre><span class="t-cmd typing-text" data-type-text="git clone https://github.com/rr-sairohith-vennu/rakcal
 cd rakcal
@@ -216,14 +222,16 @@ npm install
 npm run dev"></span></pre>
             <button class="copy-btn" onclick="copyText(this,'git clone https://github.com/rr-sairohith-vennu/rakcal\ncd rakcal\ngit checkout workshop-start\nnpm install\nnpm run dev')">Copy</button>
           </div>
-          <div class="success-box">Open <strong>http://localhost:3000</strong> — you should see the Cashback Calendar with events on the grid. Keep this terminal running.</div>
+          <div class="success-box">Open <strong>http://localhost:3000</strong> — you should see the Cashback Calendar. <strong>Keep this terminal running.</strong></div>
+
           <hr class="div">
-          <p style="font-size:.9rem;color:var(--muted);margin-bottom:.5rem;font-weight:600;">Step 2 — Open rakcal in Claude Code:</p>
+          <p style="font-size:.9rem;color:var(--muted);margin-bottom:.5rem;font-weight:600;">Step 3 — Open a new terminal, navigate to rakcal, then open Claude Code:</p>
           <div class="cmd-block">
-            <pre><span class="t-cmd typing-text" data-type-text="claude"></span></pre>
-            <button class="copy-btn" onclick="copyText(this,'claude')">Copy</button>
+            <pre><span class="t-cmd typing-text" data-type-text="cd rakcal
+claude"></span></pre>
+            <button class="copy-btn" onclick="copyText(this,'cd rakcal\nclaude')">Copy</button>
           </div>
-          <p style="font-size:.84rem;color:var(--muted);margin:.5rem 0 .75rem;">Run this from inside the <code>rakcal</code> directory. It opens Claude Code in that project. Then follow the steps in this guide.</p>
+          <p style="font-size:.84rem;color:var(--muted);margin:.5rem 0 .75rem;"><strong>Important:</strong> This must be a <strong>new terminal</strong> — not the one running <code>npm run dev</code>. Navigate to the rakcal folder first, then run <code>claude</code> to open Claude Code in that project.</p>
           <div class="info-box">When Claude Code asks permission for a bash command — select <strong>"Yes, and don't ask again for this command"</strong> to avoid repeated prompts.</div>
         `
       },
