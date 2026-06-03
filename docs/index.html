@@ -195,8 +195,9 @@
   <script>
     const SECTIONS = [
       { label: 'Setup', slideIds: ['step-setup'] },
-      { label: 'Spec Generation', slideIds: ['step-1', 'step-2'] },
-      { label: 'Build & Run Tests', slideIds: ['step-3', 'step-4', 'step-5'] },
+      { label: 'Spec Generation', slideIds: ['step-1', 'step-2', 'step-3'] },
+      { label: 'Build Tests', slideIds: ['step-4', 'step-5', 'step-6'] },
+      { label: 'Run Tests', slideIds: ['step-7'] },
       { label: 'Reference', slideIds: ['step-ref'] },
     ];
 
@@ -235,48 +236,29 @@ claude"></span></pre>
           <div class="info-box">When Claude Code asks permission for a bash command — select <strong>"Yes, and don't ask again for this command"</strong> to avoid repeated prompts.</div>
         `
       },
+      // ── SPEC GENERATION ──
       {
         type: 'step', num: '1', id: 'step-1',
         title: 'forge:spec-tests', desc: 'Generate BDD test scenarios from requirements',
         content: `
-          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Reads the requirements, API spec, storage spec, and UI spec. Generates numbered BDD scenarios (Given/When/Then) — this is the specification layer, no test code yet.</p>
+          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Reads requirements, API spec, storage spec, and UI spec. Generates numbered BDD scenarios (Given/When/Then) — the specification layer. No test code yet.</p>
           <div class="cmd-block">
             <pre><span class="t-cmd typing-text" data-type-text="/forge:spec-tests --type e2e"></span></pre>
             <button class="copy-btn" onclick="copyText(this,'/forge:spec-tests --type e2e')">Copy</button>
           </div>
           <p style="font-size:.84rem;color:var(--muted);margin:.9rem 0 .4rem;">Output — written to <code style="background:var(--pale);padding:1px 5px;border-radius:4px;">.forge/efforts/cashback-calendar/spec/test/</code>:</p>
           <div class="result-grid">
-            <div class="result-row"><span class="result-file">e2e-test-suite.md</span><span class="result-desc">System/API scenarios — 13 scenarios</span></div>
-            <div class="result-row"><span class="result-file">ui-e2e-test-suite.md</span><span class="result-desc">UI browser scenarios — 13 scenarios</span></div>
+            <div class="result-row"><span class="result-file">e2e-test-suite.md</span><span class="result-desc">System/API scenarios (~13 scenarios)</span></div>
+            <div class="result-row"><span class="result-file">ui-e2e-test-suite.md</span><span class="result-desc">UI browser scenarios (~13 scenarios)</span></div>
           </div>
           <div class="success-box" style="border-left-color:#ef4444;background:#fef2f2;margin-top:.75rem;">
-            <strong>⚠️ When it finishes, ignore the "Next steps" suggestion.</strong> forge:spec-tests will suggest running forge:spec-ui-e2e directly. Don't. Follow this guide — Step 2 is forge:build-tests.
+            <strong>⚠️ If only e2e-test-suite.md was generated (no ui-e2e-test-suite.md)</strong> — re-run the command. This is a known intermittent issue; the second run will generate both files.
           </div>
-          <div class="info-box" style="margin-top:.5rem;">While it runs (~5 min), open <code>e2e-test-suite.md</code> and read through the scenarios — understand what each one is asserting before the test code is written.</div>
+          <div class="info-box" style="margin-top:.5rem;">While it runs (~5 min), open <code>e2e-test-suite.md</code> and read through the scenarios — understand what each one is asserting before any code is written.</div>
         `
       },
       {
         type: 'step', num: '2', id: 'step-2',
-        title: 'forge:build-tests', desc: 'Implement API and E2E test code — ~8 min',
-        content: `
-          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Reads the BDD scenarios and implements the ones testable via HTTP (API routes + page rendering). Writes tests, runs them, and auto-fixes failures up to 3 cycles.</p>
-          <div class="cmd-block">
-            <pre><span class="t-cmd typing-text" data-type-text="/forge:build-tests --type e2e-test"></span></pre>
-            <button class="copy-btn" onclick="copyText(this,'/forge:build-tests --type e2e-test')">Copy</button>
-          </div>
-          <div class="substep-card">
-            <div class="substep-title">When it asks what to implement</div>
-            <p style="font-size:.84rem;color:var(--muted);line-height:1.7;">Choose <strong>Option 1</strong> — axios HTTP tests for API routes + HTTP-testable page scenarios. Browser interaction scenarios (click, modal, keyboard) require Playwright and are handled in Step 4.</p>
-          </div>
-          <p style="font-size:.84rem;color:var(--muted);margin:.9rem 0 .4rem;">Output — written to <code style="background:var(--pale);padding:1px 5px;border-radius:4px;">tests/system/e2e/api/</code>:</p>
-          <div class="result-grid">
-            <div class="result-row"><span class="result-file">cashback-calendar.e2e.test.ts</span><span class="result-desc">13 tests — API routes + page renders</span><span class="result-pass">13 passing</span></div>
-          </div>
-          <div class="info-box" style="margin-top:.75rem;"><strong>Note:</strong> At the end it says "run with npm run test:e2e" — informational only. The skill already ran and confirmed all tests pass. You don't need to run anything.</div>
-        `
-      },
-      {
-        type: 'step', num: '3', id: 'step-3',
         title: 'forge:spec-ui-e2e', desc: 'Generate Gherkin feature files — ~2 min',
         content: `
           <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Converts <code>ui-e2e-test-suite.md</code> into Gherkin <code>.feature</code> files. <code>forge:build-playwright-tests</code> consumes these to generate Playwright specs.</p>
@@ -298,24 +280,61 @@ claude"></span></pre>
             <div class="result-row"><span class="result-file">event-detail.feature</span><span class="result-desc">Day click and merchant detail panel</span></div>
             <div class="result-row"><span class="result-file">filters.feature</span><span class="result-desc">Category and merchant filter scenarios</span></div>
           </div>
-          <div class="info-box" style="margin-top:.75rem;">Open any <code>.feature</code> file — each scenario is Given / When / Then. This is exactly what forge:build-playwright-tests converts into runnable code.</div>
+          <div class="info-box" style="margin-top:.75rem;">Open any <code>.feature</code> file — each scenario is Given / When / Then. This is what forge:build-playwright-tests converts into runnable Playwright code.</div>
         `
       },
       {
-        type: 'step', num: '4', id: 'step-4',
-        title: 'forge:build-playwright-tests', desc: 'Build and run Playwright UI tests — ~15 min',
+        type: 'step', num: '3', id: 'step-3',
+        title: 'forge:plan', desc: 'Add test tasks to the implementation plan — ~2 min',
         content: `
-          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Opens a real browser, discovers DOM selectors by interacting with the live app, writes <code>.spec.ts</code> files, runs them headlessly, and auto-fixes failures.</p>
+          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Reads the generated test suites and adds two test implementation tasks to the plan. <code>forge:build-tests</code> needs these tasks to know what to implement.</p>
+          <div class="cmd-block">
+            <pre><span class="t-cmd typing-text" data-type-text="/forge:plan"></span></pre>
+            <button class="copy-btn" onclick="copyText(this,'/forge:plan')">Copy</button>
+          </div>
+          <div class="success-box" style="margin-top:.75rem;">Look for two new tasks added to <code>plan/tasks.md</code> — one typed <strong>[e2e-test]</strong> for backend tests and one for UI tests. These are what Steps 4 and 5 will implement.</div>
+          <div class="success-box" style="border-left-color:#ef4444;background:#fef2f2;margin-top:.5rem;">
+            <strong>Known issue:</strong> If forge:plan says "no open tasks" — type this nudge and it will add them:<br>
+            <em>"Why don't you add testing tasks for the new e2e test suite?"</em>
+          </div>
+        `
+      },
+      // ── BUILD TESTS ──
+      {
+        type: 'step', num: '4', id: 'step-4',
+        title: 'forge:build-tests', desc: 'Implement backend API and E2E tests — ~8 min',
+        content: `
+          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Reads the BDD scenarios and implements the ones testable via HTTP (API routes + page rendering). Writes tests, runs them, and auto-fixes failures up to 3 cycles.</p>
+          <div class="cmd-block">
+            <pre><span class="t-cmd typing-text" data-type-text="/forge:build-tests --type e2e-test"></span></pre>
+            <button class="copy-btn" onclick="copyText(this,'/forge:build-tests --type e2e-test')">Copy</button>
+          </div>
+          <div class="substep-card">
+            <div class="substep-title">When it asks what to implement</div>
+            <p style="font-size:.84rem;color:var(--muted);line-height:1.7;">Choose <strong>Option 1</strong> — axios HTTP tests for API routes + HTTP-testable page scenarios. Browser interaction scenarios require Playwright and are handled in Step 5.</p>
+          </div>
+          <p style="font-size:.84rem;color:var(--muted);margin:.9rem 0 .4rem;">Output — written to <code style="background:var(--pale);padding:1px 5px;border-radius:4px;">tests/system/e2e/api/</code>:</p>
+          <div class="result-grid">
+            <div class="result-row"><span class="result-file">cashback-calendar.e2e.test.ts</span><span class="result-desc">13 tests — API routes + page renders</span><span class="result-pass">13 passing</span></div>
+          </div>
+          <div class="info-box" style="margin-top:.75rem;"><strong>Note:</strong> When it finishes it says "run with npm run test:e2e" — that's just a reminder. The skill already ran the tests. Continue to Step 5.</div>
+        `
+      },
+      {
+        type: 'step', num: '5', id: 'step-5',
+        title: 'forge:build-playwright-tests', desc: 'Build Playwright UI tests — ~15 min',
+        content: `
+          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Opens a real browser, discovers DOM selectors from the live app, writes <code>.spec.ts</code> files, runs them headlessly, and auto-fixes failures.</p>
           <div class="cmd-block">
             <pre><span class="t-cmd typing-text" data-type-text="/forge:build-playwright-tests us"></span></pre>
             <button class="copy-btn" onclick="copyText(this,'/forge:build-playwright-tests us')">Copy</button>
           </div>
           <div class="success-box" style="border-left-color:#ef4444;background:#fef2f2;">
-            <strong>First run only:</strong> If Playwright MCP wasn't installed yet, it installs now and asks you to restart Claude Code. After restarting, run the same command again.
+            <strong>First run only:</strong> If Playwright MCP isn't installed yet, it installs now and asks you to restart Claude Code. After restarting, run the same command again.
           </div>
           <div class="substep-card" style="margin-top:.75rem;">
             <div class="substep-title">What to watch</div>
-            <p style="font-size:.84rem;color:var(--muted);line-height:1.7;">A browser opens and navigates the calendar automatically — clicking days, opening the event detail panel, applying filters. This is live DOM discovery. You don't need to interact — just observe.</p>
+            <p style="font-size:.84rem;color:var(--muted);line-height:1.7;">A browser opens and navigates the calendar automatically — clicking days, opening the event detail panel, applying filters. This is live DOM discovery.</p>
           </div>
           <p style="font-size:.84rem;color:var(--muted);margin:.9rem 0 .4rem;">Output — written to <code style="background:var(--pale);padding:1px 5px;border-radius:4px;">tests/bdd/cashback-calendar/</code>:</p>
           <div class="result-grid">
@@ -325,22 +344,32 @@ claude"></span></pre>
           </div>
         `
       },
+      // ── RUN TESTS ──
       {
-        type: 'step', num: '5', id: 'step-5',
+        type: 'step', num: '6', id: 'step-6',
         title: 'Fix + Run Headed', desc: 'Fix failures and watch tests run in the browser',
         content: `
-          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">If any tests are still failing, fix them. Then run in headed slow mode to see every scenario execute in a visible browser.</p>
-          <p style="font-size:.84rem;color:var(--muted);margin-bottom:.4rem;font-weight:600;">Fix if anything is still failing:</p>
+          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Fix any remaining failures, then run both test suites so you can see them execute.</p>
+
+          <p style="font-size:.84rem;color:var(--muted);margin-bottom:.4rem;font-weight:600;">Fix UI tests if anything is still failing:</p>
           <div class="cmd-block">
             <pre><span class="t-cmd typing-text" data-type-text="/forge:build-playwright-tests us --fix"></span></pre>
             <button class="copy-btn" onclick="copyText(this,'/forge:build-playwright-tests us --fix')">Copy</button>
           </div>
-          <p style="font-size:.84rem;color:var(--muted);margin:.9rem 0 .4rem;font-weight:600;">Run with a visible browser:</p>
+
+          <p style="font-size:.84rem;color:var(--muted);margin:.9rem 0 .4rem;font-weight:600;">Run backend API tests:</p>
+          <div class="cmd-block">
+            <pre><span class="t-cmd typing-text" data-type-text="ENVIRONMENT_TO_TEST=local npm run test:e2e"></span></pre>
+            <button class="copy-btn" onclick="copyText(this,'ENVIRONMENT_TO_TEST=local npm run test:e2e')">Copy</button>
+          </div>
+          <p style="font-size:.84rem;color:var(--muted);margin:.3rem 0 .75rem;">Runs the 13 axios tests against your running app. Expected: <strong>13 passing</strong>.</p>
+
+          <p style="font-size:.84rem;color:var(--muted);margin-bottom:.4rem;font-weight:600;">Run Playwright UI tests in headed slow mode:</p>
           <div class="cmd-block">
             <pre><span class="t-cmd typing-text" data-type-text="npx playwright test tests/bdd/cashback-calendar/ --project=local-anonymous --headed --slow-mo=800"></span></pre>
             <button class="copy-btn" onclick="copyText(this,'npx playwright test tests/bdd/cashback-calendar/ --project=local-anonymous --headed --slow-mo=800')">Copy</button>
           </div>
-          <div class="success-box" style="margin-top:.75rem;">Watch the browser navigate months, click event days, verify merchant details, apply filters — each action is a BDD scenario that traces back to the original PRD user stories. From requirements to passing tests in one flow.</div>
+          <div class="success-box" style="margin-top:.75rem;">Watch the browser navigate months, click event days, open merchant details, apply filters — each action traces back to a BDD scenario from the original PRD.</div>
         `
       },
       {
@@ -355,7 +384,8 @@ claude"></span></pre>
               <tr><td class="prompt-col">Permission prompts on every action</td><td>Choose <strong>"Yes, and don't ask again for this command"</strong> each time.</td></tr>
               <tr><td class="prompt-col">forge:build-tests asks which option</td><td>Choose <strong>Option 1</strong> (axios/HTTP tests). Browser scenarios go to forge:build-playwright-tests in Step 4.</td></tr>
               <tr><td class="prompt-col">"run with npm run test:e2e" message</td><td>Informational only — the skill already ran the tests. Ignore it and continue to the next step.</td></tr>
-              <tr><td class="prompt-col">forge:spec-tests suggests forge:spec-ui-e2e next</td><td>Ignore the suggestion. Follow this guide — Step 2 is <code>forge:build-tests</code>, not forge:spec-ui-e2e.</td></tr>
+              <tr><td class="prompt-col">forge:plan says "no open tasks"</td><td>Type: <em>"Why don't you add testing tasks for the new e2e test suite?"</em> — it will add them after the nudge.</td></tr>
+              <tr><td class="prompt-col">Only e2e-test-suite.md generated, no ui-e2e-test-suite.md</td><td>Known intermittent issue. Re-run <code>/forge:spec-tests --type e2e</code> and it will generate both files.</td></tr>
               <tr><td class="prompt-col">Tests fail after 3 cycles</td><td>Stop. Read the last error carefully before re-running. Usually a selector changed or the server isn't running.</td></tr>
               <tr><td class="prompt-col">forge:spec-ui-e2e asks for region</td><td>Answer <code>us</code>, feature area <code>cashback-calendar</code>.</td></tr>
               <tr><td class="prompt-col">Context window filling up</td><td>Run <code>/compact</code> in Claude Code, then resume the skill.</td></tr>
@@ -419,10 +449,11 @@ claude"></span></pre>
         const groups = [
           { num: '⚙', title: 'Setup — Clone, start app, open Claude Code', mins: 3 },
           { num: '1', title: 'forge:spec-tests — Generate BDD scenarios', mins: 5 },
-          { num: '2', title: 'forge:build-tests — Implement API/E2E tests', mins: 8 },
-          { num: '3', title: 'forge:spec-ui-e2e — Generate Gherkin files', mins: 2 },
-          { num: '4', title: 'forge:build-playwright-tests — Build UI tests', mins: 15 },
-          { num: '5', title: 'Fix + Run — Watch tests in headed browser', mins: 5 },
+          { num: '2', title: 'forge:spec-ui-e2e — Generate Gherkin files', mins: 2 },
+          { num: '3', title: 'forge:plan — Add test tasks to plan', mins: 2 },
+          { num: '4', title: 'forge:build-tests — Implement backend tests', mins: 8 },
+          { num: '5', title: 'forge:build-playwright-tests — Build UI tests', mins: 15 },
+          { num: '6', title: 'Fix + Run — Run both test suites', mins: 5 },
         ];
         const outlineRows = groups.map((g, i) => `<div class="outline-item" onclick="goToStepNum(${i+1})"><div class="oi-num">${g.num}</div><div class="oi-body"><div class="oi-title">${g.title}</div><div class="oi-meta">${g.mins} min</div></div><span class="oi-arrow">›</span></div>`).join('');
         return `<div class="welcome-slide"><div class="wl-left"><div class="wl-eyebrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>LUNCH &amp; LEARN</div><h1>Forge<br>Testing<br>Skills</h1><p>Run the full Forge testing pipeline on the Cashback Calendar. The app is pre-built — you are here to run and understand the testing skills.</p><div class="wl-meta"><div class="wl-meta-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>~40 minutes</div><div class="wl-meta-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>5 skills</div></div><button class="btn-begin" onclick="nextSlide()"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Start Tutorial</button><div class="wl-autosave">Progress saved automatically</div></div><div class="wl-right"><div class="wl-outline-label">COURSE OUTLINE</div><div class="outline-list">${outlineRows}</div></div></div>`;
