@@ -236,27 +236,6 @@ claude"></span></pre>
         `
       },
       {
-        type: 'step', num: '0.5', id: 'step-0-5',
-        title: 'Gap Analysis', desc: 'Read the validation report before writing any tests',
-        content: `
-          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.9rem;">A validation report was pre-generated when the app was built. Read it first — it tells you exactly what test coverage is missing and why.</p>
-          <div class="prompt-block">
-            <div class="prompt-label">Type this in Claude Code</div>
-            <p>Read .forge/efforts/cashback-calendar/validation/report.md and summarise what test coverage is missing.</p>
-            <button class="copy-btn" onclick="copyText(this,'Read .forge/efforts/cashback-calendar/validation/report.md and summarise what test coverage is missing.')">Copy</button>
-          </div>
-          <div class="substep-card" style="margin-top:1rem;">
-            <div class="substep-title">What to look for</div>
-            <ul style="padding-left:1.2rem;line-height:1.9;font-size:.87rem;color:var(--muted);">
-              <li>Which BRs (business requirements) have no covering test scenario</li>
-              <li>Which API endpoints are untested</li>
-              <li>Which UI states have no Playwright spec</li>
-            </ul>
-          </div>
-          <div class="info-box" style="margin-top:.75rem;">Understanding the gaps first helps you evaluate whether the output from forge:spec-tests is complete — rather than accepting whatever it generates blindly.</div>
-        `
-      },
-      {
         type: 'step', num: '1', id: 'step-1',
         title: 'forge:spec-tests', desc: 'Generate BDD test scenarios from requirements',
         content: `
@@ -425,7 +404,7 @@ claude"></span></pre>
         let dotContent, labelText, subText;
         if (s.type === 'welcome') { dotContent = '★'; labelText = 'Welcome'; subText = 'Start here'; }
         else if (s.type === 'complete') { dotContent = '✦'; labelText = 'Complete'; subText = 'All done'; }
-        else { dotContent = s.num; labelText = s.num === '?' ? 'Troubleshooting' : s.num === '⚙' ? 'Setup' : s.num === '0.5' ? 'Step 0.5 — Gap Analysis' : 'Step ' + s.num; subText = s.title; }
+        else { dotContent = s.num; labelText = s.num === '?' ? 'Troubleshooting' : s.num === '⚙' ? 'Setup' : 'Step ' + s.num; subText = s.title; }
 
         li.innerHTML = `<div class="sb-dot"><span class="sb-num">${dotContent}</span></div><div style="flex:1;min-width:0;"><div class="sb-label">${labelText}</div>${subText ? `<div class="sb-sublabel">${subText}</div>` : ''}</div>`;
         list.appendChild(li);
@@ -439,7 +418,6 @@ claude"></span></pre>
       if (s.type === 'welcome') {
         const groups = [
           { num: '⚙', title: 'Setup — Clone, start app, open Claude Code', mins: 3 },
-          { num: '0.5', title: 'Gap Analysis — Read the validation report', mins: 2 },
           { num: '1', title: 'forge:spec-tests — Generate BDD scenarios', mins: 5 },
           { num: '2', title: 'forge:build-tests — Implement API/E2E tests', mins: 8 },
           { num: '3', title: 'forge:spec-ui-e2e — Generate Gherkin files', mins: 2 },
