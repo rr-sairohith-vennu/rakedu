@@ -193,28 +193,18 @@
   <div class="card">
     <div class="badge step"><span class="num">Setup</span> Do this first</div>
     <h1>Get the App Running</h1>
-    <p class="sub">Clone the repo, init the database, seed demo data, and start the server. Then open the folder in Claude Code.</p>
+    <p class="sub">The app is pre-built with a seeded database. Clone, install, and start — that's it.</p>
 
     <div class="cmd">
-      <div class="cmd-top"><span class="cmd-lbl">Terminal — step 1: clone and install</span><button class="copy" onclick="cp(this)">Copy</button></div>
+      <div class="cmd-top"><span class="cmd-lbl">Terminal — clone, install, and start</span><button class="copy" onclick="cp(this)">Copy</button></div>
       <div class="cmd-body">git clone https://github.com/rr-sairohith-vennu/rakcal
 cd rakcal
 git checkout workshop-start
-npm install</div>
+npm install
+npm run dev</div>
     </div>
 
-    <div class="cmd">
-      <div class="cmd-top"><span class="cmd-lbl">Terminal — step 2: init DB and seed data</span><button class="copy" onclick="cp(this)">Copy</button></div>
-      <div class="cmd-body">npx prisma db push
-npx ts-node --compiler-options '{"module":"CommonJS"}' prisma/seed.ts</div>
-    </div>
-
-    <div class="cmd">
-      <div class="cmd-top"><span class="cmd-lbl">Terminal — step 3: start the app (keep running)</span><button class="copy" onclick="cp(this)">Copy</button></div>
-      <div class="cmd-body">npm run dev</div>
-    </div>
-
-    <div class="box good">Open <strong>http://localhost:3000</strong> — you should see the Cashback Calendar with events on the grid.</div>
+    <div class="box good">Open <strong>http://localhost:3000</strong> — you should see the Cashback Calendar with events on the grid. No DB setup needed.</div>
 
     <hr class="d">
 
@@ -432,7 +422,7 @@ npx ts-node --compiler-options '{"module":"CommonJS"}' prisma/seed.ts</div>
     <h1>Common Problems</h1>
 
     <ul class="l">
-      <li><strong>API returns HTML instead of JSON</strong> — DB not seeded. Run <code>npx prisma db push && npx ts-node --compiler-options '{"module":"CommonJS"}' prisma/seed.ts</code></li>
+      <li><strong>API returns HTML instead of JSON</strong> — Dev server not running. Make sure <code>npm run dev</code> is running in a separate terminal.</li>
       <li><strong>App not loading at localhost:3000</strong> — <code>npm run dev</code> must be running in a separate terminal. Keep it open the entire time.</li>
       <li><strong>Playwright MCP not found</strong> — Run <code>claude mcp add playwright -- npx @playwright/mcp@latest</code> then restart Claude Code.</li>
       <li><strong>Permission prompts keep appearing</strong> — Choose "Yes (and don't ask again for this command)" each time.</li>
@@ -457,8 +447,6 @@ git clone https://github.com/rr-sairohith-vennu/rakcal
 cd rakcal
 git checkout workshop-start
 npm install
-npx prisma db push
-npx ts-node --compiler-options '{"module":"CommonJS"}' prisma/seed.ts
 npm run dev          # keep running in a separate terminal
 
 # Install Playwright MCP (once — restart Claude Code after)
