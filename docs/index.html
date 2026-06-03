@@ -300,7 +300,7 @@ claude"></span></pre>
         type: 'step', num: '3', id: 'step-3',
         title: 'forge:spec-ui-e2e', desc: 'Generate Gherkin feature files — ~2 min',
         content: `
-          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Converts <code>ui-e2e-test-suite.md</code> into Gherkin <code>.feature</code> files — the format forge:build-playwright-tests reads to write Playwright specs.</p>
+          <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:.75rem;">Converts <code>ui-e2e-test-suite.md</code> into Gherkin <code>.feature</code> files. <code>forge:build-playwright-tests</code> consumes these to generate Playwright specs.</p>
           <div class="cmd-block">
             <pre><span class="t-cmd typing-text" data-type-text="/forge:spec-ui-e2e"></span></pre>
             <button class="copy-btn" onclick="copyText(this,'/forge:spec-ui-e2e')">Copy</button>
